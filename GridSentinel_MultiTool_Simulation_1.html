@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridSentinel AI — Multi-Tool Simulation Suite | Hybrid Hack '26 Round 2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1a1a2e;color:#e0e0e0;font-family:'Segoe UI',sans-serif;overflow-x:hidden;}
+
+/* ── MASTER NAV ── */
+.master-nav{position:fixed;top:0;left:0;right:0;z-index:300;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;background:#0d0d1a;border-bottom:2px solid #00d4ff;}
+.mn-brand{font-size:.9rem;font-weight:700;color:#00d4ff;display:flex;align-items:center;gap:7px;}
+.mn-brand .dot{width:8px;height:8px;border-radius:50%;background:#2ed573;animation:pulse 2s infinite;box-shadow:0 0 8px #2ed573;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.tool-tabs{display:flex;gap:2px;overflow-x:auto;}
+.ttab{padding:5px 11px;font-size:.68rem;font-weight:700;cursor:pointer;border:1px solid transparent;border-radius:4px;color:#6b7fa3;transition:.2s;white-space:nowrap;background:transparent;letter-spacing:.02em;}
+.ttab:hover{color:#e0e0e0;background:rgba(255,255,255,.06);}
+.ttab.active{color:#fff;border-color:currentColor;}
+.ttab.t1.active{color:#ff9500;background:rgba(255,149,0,.12);border-color:#ff9500;}
+.ttab.t2.active{color:#cc2233;background:rgba(204,34,51,.12);border-color:#cc2233;}
+.ttab.t3.active{color:#ff6b00;background:rgba(255,107,0,.12);border-color:#ff6b00;}
+.ttab.t4.active{color:#0078d7;background:rgba(0,120,215,.12);border-color:#0078d7;}
+.ttab.t5.active{color:#009900;background:rgba(0,153,0,.12);border-color:#009900;}
+.ttab.t6.active{color:#00aaff;background:rgba(0,170,255,.12);border-color:#00aaff;}
+.ttab.t7.active{color:#cc0000;background:rgba(204,0,0,.12);border-color:#cc0000;}
+.ttab.t8.active{color:#ff6600;background:rgba(255,102,0,.12);border-color:#ff6600;}
+.ttab.t9.active{color:#6600cc;background:rgba(102,0,204,.12);border-color:#6600cc;}
+.mn-right{display:flex;align-items:center;gap:6px;font-size:.65rem;}
+.bd{padding:2px 7px;border-radius:3px;font-size:.6rem;font-weight:700;}
+.bd-r2{background:rgba(168,85,247,.25);color:#c084fc;border:1px solid rgba(168,85,247,.4);}
+.bd-ps3{background:rgba(255,71,87,.2);color:#ff4757;border:1px solid rgba(255,71,87,.35);}
+
+main{padding-top:52px;}
+.tool-panel{display:none;}
+.tool-panel.active{display:block;}
+
+/* ══════════════════════════════════════
+   TOOL 1: HOMER PRO
+══════════════════════════════════════ */
+.homer{background:#2b2b2b;min-height:calc(100vh - 52px);}
+.homer .menubar{background:#3c3c3c;height:26px;display:flex;align-items:center;padding:0 8px;gap:16px;border-bottom:1px solid #555;}
+.homer .menubar span{font-size:.72rem;color:#ddd;cursor:pointer;}
+.homer .menubar span:hover{color:#ff9500;}
+.homer .toolbar{background:#444;height:36px;display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:1px solid #555;}
+.homer .tbtn{padding:4px 10px;background:#555;border:1px solid #666;border-radius:3px;font-size:.7rem;color:#ddd;cursor:pointer;}
+.homer .tbtn:hover{background:#666;}
+.homer .tbtn.active{background:#ff9500;color:#000;border-color:#ff9500;}
+.homer .workspace{display:grid;grid-template-columns:200px 1fr 260px;height:calc(100vh - 114px);}
+.homer .sidebar{background:#333;border-right:1px solid #555;padding:6px;overflow-y:auto;}
+.homer .sidebar h4{font-size:.7rem;color:#ff9500;text-transform:uppercase;letter-spacing:.06em;margin:.6rem 0 .3rem;}
+.homer .comp-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:3px;cursor:pointer;font-size:.75rem;color:#ccc;}
+.homer .comp-item:hover{background:#444;}
+.homer .comp-item .ci{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.homer .canvas-area{background:#f5f0e8;position:relative;overflow:hidden;}
+.homer .results-panel{background:#2a2a2a;border-left:1px solid #555;overflow-y:auto;}
+.homer .rp-tab{padding:5px 10px;font-size:.7rem;color:#aaa;cursor:pointer;border-bottom:1px solid #444;}
+.homer .rp-tab.active{color:#ff9500;border-bottom:color:#ff9500;}
+
+/* HOMER Canvas SVG */
+.homer-svg{width:100%;height:100%;}
+
+/* HOMER Results */
+.homer-result{padding:8px 10px;border-bottom:1px solid #333;}
+.homer-result h5{font-size:.68rem;color:#ff9500;margin-bottom:4px;text-transform:uppercase;}
+.homer-result table{width:100%;font-size:.7rem;}
+.homer-result td{padding:2px 4px;color:#ccc;}
+.homer-result td:last-child{color:#ff9500;font-family:monospace;text-align:right;}
+
+/* ══════════════════════════════════════
+   TOOL 2: MATLAB/SIMULINK
+══════════════════════════════════════ */
+.matlab{background:#1e1e1e;min-height:calc(100vh - 52px);}
+.matlab .menubar{background:#252526;height:26px;display:flex;align-items:center;padding:0 8px;gap:14px;border-bottom:1px solid #333;}
+.matlab .menubar span{font-size:.72rem;color:#ccc;cursor:pointer;}
+.matlab .ribbon{background:#1e3a5f;height:80px;padding:6px 10px;display:flex;gap:20px;align-items:center;border-bottom:2px solid #cc2233;}
+.matlab .ribbon-group{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.matlab .ribbon-group label{font-size:.6rem;color:#aaccee;text-transform:uppercase;}
+.matlab .rbtn{padding:4px 12px;background:#cc2233;color:#fff;border:none;border-radius:3px;font-size:.72rem;cursor:pointer;font-weight:600;}
+.matlab .rbtn.green{background:#006600;}
+.matlab .rbtn.blue{background:#0055aa;}
+.matlab .workspace{display:grid;grid-template-columns:180px 1fr;height:calc(100vh - 160px);}
+.matlab .model-browser{background:#252526;border-right:1px solid #333;padding:6px;font-size:.72rem;}
+.matlab .model-browser h4{color:#cc2233;font-size:.68rem;text-transform:uppercase;margin:.4rem 0 .2rem;}
+.matlab .lib-item{padding:3px 8px;color:#ccc;cursor:pointer;border-radius:2px;}
+.matlab .lib-item:hover{background:#333;}
+.matlab .simulink-canvas{background:#f0f0f0;position:relative;overflow:hidden;}
+.matlab .scope-window{position:absolute;right:10px;top:10px;width:340px;background:#000;border:2px solid #cc2233;border-radius:4px;padding:6px;}
+.matlab .scope-window h5{color:#cc2233;font-size:.7rem;margin-bottom:4px;}
+
+/* ══════════════════════════════════════
+   TOOL 3: TINKERCAD
+══════════════════════════════════════ */
+.tinkercad{background:#1a1a2e;min-height:calc(100vh - 52px);}
+.tc-header{background:#ff6b00;height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;}
+.tc-header .logo{font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+.tc-header .hbtns{display:flex;gap:8px;}
+.tc-header button{padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:.78rem;font-weight:600;}
+.tc-workspace{display:grid;grid-template-columns:240px 1fr 220px;height:calc(100vh - 100px);}
+.tc-components{background:#1e1e3a;border-right:1px solid #333;padding:8px;overflow-y:auto;}
+.tc-components h4{font-size:.68rem;color:#ff6b00;text-transform:uppercase;letter-spacing:.06em;margin:.5rem 0 .2rem;}
+.tc-comp{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:4px;cursor:grab;font-size:.75rem;color:#ccc;border:1px solid #333;margin-bottom:3px;background:#252540;}
+.tc-comp:hover{border-color:#ff6b00;color:#ff6b00;}
+.tc-canvas{background:#1e1e1e;position:relative;overflow:hidden;}
+.tc-panel{background:#1e1e3a;border-left:1px solid #333;padding:8px;overflow-y:auto;}
+.tc-panel h4{font-size:.68rem;color:#ff6b00;text-transform:uppercase;margin:.5rem 0 .3rem;}
+
+/* ══════════════════════════════════════
+   TOOL 4: LTSPICE / NI MULTISIM / KICAD
+══════════════════════════════════════ */
+.ltspice{background:#ffffff;color:#000;min-height:calc(100vh - 52px);}
+.lt-menu{background:#d4d0c8;height:24px;display:flex;align-items:center;padding:0 6px;gap:14px;border-bottom:2px solid #808080;}
+.lt-menu span{font-size:.72rem;color:#000;cursor:pointer;}
+.lt-toolbar{background:#d4d0c8;height:32px;display:flex;align-items:center;padding:0 6px;gap:2px;border-bottom:1px solid #808080;}
+.lt-tbtn{padding:3px 8px;background:#c0c0c0;border:1px solid #808080;font-size:.7rem;cursor:pointer;color:#000;}
+.lt-tbtn:hover{background:#d0d0d0;}
+.lt-workspace{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 108px);}
+.lt-schematic{background:#000010;border-right:2px solid #808080;position:relative;overflow:hidden;}
+.lt-waveform{background:#000010;position:relative;overflow:hidden;}
+
+/* NI MULTISIM */
+.multisim{background:#e8e8e8;color:#000;min-height:calc(100vh - 52px);}
+.ms-header{background:#003366;height:46px;display:flex;align-items:center;padding:0 10px;gap:20px;}
+.ms-header .logo{font-size:.9rem;font-weight:700;color:#fff;}
+.ms-toolbar{background:#f0f0f0;height:36px;display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:2px solid #003366;}
+.ms-btn{padding:4px 10px;background:#ddd;border:1px solid #aaa;font-size:.7rem;cursor:pointer;}
+.ms-workspace{display:grid;grid-template-columns:180px 1fr 200px;height:calc(100vh - 134px);}
+.ms-parts{background:#fff;border-right:1px solid #ccc;padding:6px;overflow-y:auto;}
+.ms-parts h4{font-size:.68rem;color:#003366;font-weight:700;margin:.4rem 0 .2rem;}
+.ms-canvas{background:#fff;position:relative;overflow:hidden;}
+.ms-instruments{background:#f5f5f5;border-left:1px solid #ccc;padding:6px;overflow-y:auto;}
+
+/* KICAD */
+.kicad{background:#2b2b2b;min-height:calc(100vh - 52px);}
+.kc-header{background:#1a1a1a;height:32px;display:flex;align-items:center;padding:0 8px;gap:14px;border-bottom:1px solid #555;}
+.kc-header span{font-size:.72rem;color:#ddd;cursor:pointer;}
+.kc-toolbar{background:#333;height:40px;display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:1px solid #555;}
+.kc-tbtn{padding:5px 10px;background:#444;border:1px solid #555;font-size:.7rem;cursor:pointer;color:#ddd;border-radius:3px;}
+.kc-workspace{display:grid;grid-template-columns:1fr 220px;height:calc(100vh - 124px);}
+.kc-canvas{background:#1a1a1a;position:relative;overflow:hidden;}
+.kc-inspector{background:#2a2a2a;border-left:1px solid #444;padding:8px;}
+.kc-inspector h4{font-size:.68rem;color:#0078d7;text-transform:uppercase;margin:.4rem 0 .2rem;}
+
+/* RETSCREEN */
+.retscreen{background:#fff;color:#333;min-height:calc(100vh - 52px);}
+.rs-header{background:#006633;height:50px;display:flex;align-items:center;padding:0 1rem;gap:20px;}
+.rs-logo{font-size:1.1rem;font-weight:700;color:#fff;}
+.rs-tabs{display:flex;height:calc(100% - 50px);}
+.rs-nav{width:180px;background:#f0f7f0;border-right:1px solid #ccc;padding:8px;}
+.rs-nav h4{font-size:.7rem;color:#006633;font-weight:700;text-transform:uppercase;margin:.5rem 0 .2rem;}
+.rs-nav li{list-style:none;padding:4px 8px;font-size:.78rem;cursor:pointer;border-radius:3px;color:#333;}
+.rs-nav li:hover,.rs-nav li.active{background:#006633;color:#fff;}
+.rs-content{flex:1;padding:1rem;overflow-y:auto;}
+
+/* COMMON CHART CANVAS */
+canvas{display:block;}
+
+/* SHARED */
+.status-bar{height:22px;background:#1a1a1a;display:flex;align-items:center;padding:0 10px;font-size:.65rem;color:#888;gap:20px;border-top:1px solid #333;position:fixed;bottom:0;left:0;right:0;z-index:100;}
+.status-bar .sb-ok{color:#2ed573;}
+.status-bar .sb-warn{color:#ffa502;}
+.status-bar .sb-run{color:#ff9500;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* RETScreen specific */
+.rs-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:.8rem;}
+.rs-table th{background:#006633;color:#fff;padding:5px 8px;text-align:left;font-size:.75rem;}
+.rs-table td{padding:4px 8px;border-bottom:1px solid #e0e0e0;}
+.rs-table tr:nth-child(even) td{background:#f9f9f9;}
+.rs-table .num{text-align:right;font-family:monospace;font-weight:700;color:#006633;}
+.rs-section{margin-bottom:1.2rem;}
+.rs-section h3{font-size:.9rem;font-weight:700;color:#006633;border-bottom:2px solid #006633;padding-bottom:4px;margin-bottom:.6rem;}
+
+/* OrCAD/PSpice */
+.orcad{background:#f5f5f5;color:#000;min-height:calc(100vh - 52px);}
+.oc-header{background:#4a0080;height:44px;display:flex;align-items:center;padding:0 10px;gap:16px;}
+.oc-header .logo{font-size:.9rem;font-weight:700;color:#fff;}
+.oc-menu{background:#e0e0e0;height:24px;display:flex;align-items:center;padding:0 8px;gap:14px;border-bottom:1px solid #ccc;}
+.oc-menu span{font-size:.72rem;cursor:pointer;color:#333;}
+.oc-workspace{display:grid;grid-template-columns:1fr 1fr;height:calc(100vh - 120px);}
+.oc-schematic{background:#fff;border-right:2px solid #ccc;position:relative;overflow:hidden;}
+.oc-probe{background:#000;position:relative;overflow:hidden;}
+
+/* EAGLE */
+.eagle{background:#2b2b2b;min-height:calc(100vh - 52px);}
+.ea-header{background:#ff4b00;height:44px;display:flex;align-items:center;padding:0 10px;gap:16px;}
+.ea-logo{font-size:.9rem;font-weight:700;color:#fff;}
+.ea-workspace{display:grid;grid-template-columns:160px 1fr 180px;height:calc(100vh - 44px);}
+.ea-libs{background:#222;border-right:1px solid #444;padding:6px;overflow-y:auto;}
+.ea-canvas{background:#1a1a1a;position:relative;overflow:hidden;}
+.ea-props{background:#222;border-left:1px solid #444;padding:6px;overflow-y:auto;}
+
+/* Info badge */
+.tool-badge{display:inline-block;padding:3px 9px;border-radius:4px;font-size:.66rem;font-weight:700;margin-left:6px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#444;border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- MASTER NAV -->
+<div class="master-nav">
+  <div class="mn-brand">
+    <div class="dot"></div>
+    GRIDS<span style="color:#fff;">ENTINEL</span>&nbsp;
+    <span style="color:#6b7fa3;font-size:.6rem;">MULTI-TOOL SIM</span>
+  </div>
+  <div class="tool-tabs">
+    <button class="ttab t1 active" onclick="showTool('homer')">🟠 HOMER Pro</button>
+    <button class="ttab t2" onclick="showTool('matlab')">🔴 MATLAB/Simulink</button>
+    <button class="ttab t3" onclick="showTool('tinkercad')">🟡 Tinkercad</button>
+    <button class="ttab t4" onclick="showTool('multisim')">🔵 NI Multisim</button>
+    <button class="ttab t5" onclick="showTool('kicad')">🟢 KiCad</button>
+    <button class="ttab t6" onclick="showTool('ltspice')">🔵 LTspice</button>
+    <button class="ttab t7" onclick="showTool('orcad')">🔴 OrCAD/PSpice</button>
+    <button class="ttab t8" onclick="showTool('eagle')">🟠 Autodesk EAGLE</button>
+    <button class="ttab t9" onclick="showTool('retscreen')">🟣 RETScreen</button>
+  </div>
+  <div class="mn-right">
+    <span class="bd bd-r2">ROUND 2</span>
+    <span class="bd bd-ps3">PS-3</span>
+    <span id="clk" style="font-family:monospace;color:#6b7fa3;font-size:.65rem;"></span>
+  </div>
+</div>
+
+<main>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 1: HOMER PRO
+════════════════════════════════════════════════ -->
+<div class="tool-panel homer active" id="t-homer">
+  <div class="menubar">
+    <span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Calculate</span><span>Results</span><span>Help</span>
+    <span style="margin-left:auto;color:#ff9500;font-weight:700;">HOMER Pro 3.16 — GridSentinel Microgrid Model</span>
+  </div>
+  <div class="toolbar">
+    <button class="tbtn active">📁 Open</button>
+    <button class="tbtn">💾 Save</button>
+    <button class="tbtn" style="background:#ff9500;color:#000;font-weight:700;" onclick="runHomer()">▶ Calculate</button>
+    <button class="tbtn">📊 Results</button>
+    <button class="tbtn">📋 Report</button>
+    <span style="margin-left:20px;font-size:.72rem;color:#aaa;">Project: GridSentinel_PS3_IslandMode.homer</span>
+    <span id="homer-status" style="margin-left:auto;font-size:.7rem;color:#2ed573;">● Ready</span>
+  </div>
+  <div class="workspace">
+    <!-- Left sidebar -->
+    <div class="sidebar">
+      <h4>Components</h4>
+      <div class="comp-item"><div class="ci" style="background:#f5a623;">☀</div>Solar PV — 150kWp</div>
+      <div class="comp-item"><div class="ci" style="background:#4fc3f7;">💨</div>Wind — 3×33kW</div>
+      <div class="comp-item"><div class="ci" style="background:#69d16f;">🌿</div>Biomass CHP — 60kW</div>
+      <div class="comp-item"><div class="ci" style="background:#a855f7;">🔋</div>BESS — 500kWh</div>
+      <div class="comp-item"><div class="ci" style="background:#ff9800;">⚡</div>Converter — 200kW</div>
+      <div class="comp-item"><div class="ci" style="background:#ff4757;">⚠</div>Grid — OFFLINE</div>
+      <h4>Loads</h4>
+      <div class="comp-item"><div class="ci" style="background:#ff4757;">🏥</div>Primary — 145kW</div>
+      <div class="comp-item"><div class="ci" style="background:#ffa502;">🏫</div>Secondary — 57kW</div>
+      <div class="comp-item"><div class="ci" style="background:#2ed573;">🏘</div>Tertiary — 86kW</div>
+      <h4>Constraints</h4>
+      <div class="comp-item" style="font-size:.7rem;color:#aaa;">Max Annual Shortage: 0%</div>
+      <div class="comp-item" style="font-size:.7rem;color:#aaa;">Min Renewable: 100%</div>
+      <div class="comp-item" style="font-size:.7rem;color:#aaa;">Island Mode: 72h min</div>
+    </div>
+
+    <!-- Canvas area -->
+    <div class="canvas-area" id="homer-canvas">
+      <svg id="homer-svg" style="width:100%;height:100%;" viewBox="0 0 700 500">
+        <!-- Background grid -->
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ddd" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="700" height="500" fill="url(#grid)"/>
+
+        <!-- BUS LINE -->
+        <line x1="180" y1="250" x2="520" y2="250" stroke="#cc6600" stroke-width="4"/>
+        <text x="340" y="240" text-anchor="middle" font-size="10" fill="#cc6600" font-weight="bold">AC BUS — 230V / 50Hz</text>
+
+        <!-- SOLAR PV -->
+        <rect x="30" y="60" width="110" height="70" rx="6" fill="#fff8e1" stroke="#f5a623" stroke-width="2"/>
+        <text x="85" y="82" text-anchor="middle" font-size="22">☀</text>
+        <text x="85" y="98" text-anchor="middle" font-size="9" font-weight="bold" fill="#e65100">Solar PV #1</text>
+        <text x="85" y="110" text-anchor="middle" font-size="8" fill="#666">150 kWp</text>
+        <text x="85" y="122" text-anchor="middle" font-size="8" fill="#f5a623">CF = 0.38</text>
+        <line x1="140" y1="95" x2="200" y2="95" stroke="#f5a623" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="200" y1="95" x2="200" y2="250" stroke="#f5a623" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="210" y="160" font-size="8" fill="#f5a623">57 kW avg</text>
+
+        <!-- WIND -->
+        <rect x="30" y="175" width="110" height="70" rx="6" fill="#e3f2fd" stroke="#4fc3f7" stroke-width="2"/>
+        <text x="85" y="197" text-anchor="middle" font-size="22">💨</text>
+        <text x="85" y="213" text-anchor="middle" font-size="9" font-weight="bold" fill="#0277bd">Wind #2</text>
+        <text x="85" y="225" text-anchor="middle" font-size="8" fill="#666">3 × 33kW</text>
+        <text x="85" y="237" text-anchor="middle" font-size="8" fill="#4fc3f7">CF = 0.43</text>
+        <line x1="140" y1="210" x2="180" y2="250" stroke="#4fc3f7" stroke-width="2" stroke-dasharray="5,3"/>
+
+        <!-- BIOMASS -->
+        <rect x="30" y="295" width="110" height="70" rx="6" fill="#e8f5e9" stroke="#69d16f" stroke-width="2"/>
+        <text x="85" y="317" text-anchor="middle" font-size="22">🌿</text>
+        <text x="85" y="333" text-anchor="middle" font-size="9" font-weight="bold" fill="#1b5e20">Biomass CHP #7</text>
+        <text x="85" y="345" text-anchor="middle" font-size="8" fill="#666">60 kW CHP</text>
+        <text x="85" y="357" text-anchor="middle" font-size="8" fill="#69d16f">FIRM 24/7</text>
+        <line x1="140" y1="330" x2="200" y2="330" stroke="#69d16f" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="200" y1="330" x2="200" y2="250" stroke="#69d16f" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="210" y="300" font-size="8" fill="#69d16f">60 kW</text>
+
+        <!-- BESS -->
+        <rect x="280" y="310" width="110" height="80" rx="6" fill="#f3e5f5" stroke="#a855f7" stroke-width="2"/>
+        <text x="335" y="335" text-anchor="middle" font-size="22">🔋</text>
+        <text x="335" y="352" text-anchor="middle" font-size="9" font-weight="bold" fill="#6a1b9a">BESS #5</text>
+        <text x="335" y="364" text-anchor="middle" font-size="8" fill="#666">500 kWh / 200 kW</text>
+        <text x="335" y="376" text-anchor="middle" font-size="8" fill="#a855f7">SOC: 15–90%</text>
+        <line x1="335" y1="310" x2="335" y2="250" stroke="#a855f7" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="348" y="285" font-size="8" fill="#a855f7">±200kW</text>
+
+        <!-- CONVERTER -->
+        <rect x="280" y="170" width="110" height="65" rx="6" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+        <text x="335" y="195" text-anchor="middle" font-size="9" font-weight="bold" fill="#e65100">Converter #9</text>
+        <text x="335" y="210" text-anchor="middle" font-size="8" fill="#666">200 kW</text>
+        <text x="335" y="222" text-anchor="middle" font-size="8" fill="#ff9800">η = 97%</text>
+        <line x1="335" y1="170" x2="335" y2="130" stroke="#ff9800" stroke-width="2" stroke-dasharray="5,3"/>
+        <line x1="335" y1="235" x2="335" y2="250" stroke="#ff9800" stroke-width="2" stroke-dasharray="5,3"/>
+
+        <!-- LOAD -->
+        <rect x="530" y="60" width="120" height="190" rx="6" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+        <text x="590" y="85" text-anchor="middle" font-size="9" font-weight="bold" fill="#880e4f">LOADS</text>
+        <rect x="540" y="95" width="100" height="28" rx="3" fill="#ffebee" stroke="#ff4757" stroke-width="1"/>
+        <text x="590" y="112" text-anchor="middle" font-size="8" fill="#c62828">🏥 P1 Hospital: 85kW</text>
+        <rect x="540" y="130" width="100" height="28" rx="3" fill="#e3f2fd" stroke="#4fc3f7" stroke-width="1"/>
+        <text x="590" y="147" text-anchor="middle" font-size="8" fill="#0277bd">💧 P1 Water: 42kW</text>
+        <rect x="540" y="165" width="100" height="28" rx="3" fill="#e8f5e9" stroke="#69d16f" stroke-width="1"/>
+        <text x="590" y="182" text-anchor="middle" font-size="8" fill="#1b5e20">📡 P1 Telecom: 18kW</text>
+        <rect x="540" y="200" width="100" height="20" rx="2" fill="#fff3e0" stroke="#ffa502" stroke-width="1"/>
+        <text x="590" y="214" text-anchor="middle" font-size="7.5" fill="#e65100">P2: 57kW | P3: 86kW</text>
+        <rect x="540" y="228" width="100" height="16" rx="2" fill="#fce4ec" stroke="#e91e63" stroke-width="1"/>
+        <text x="590" y="240" text-anchor="middle" font-size="7.5" fill="#880e4f">Total: 288 kW peak</text>
+        <line x1="530" y1="145" x2="520" y2="250" stroke="#e91e63" stroke-width="2" stroke-dasharray="5,3"/>
+
+        <!-- GRID (OFFLINE) -->
+        <rect x="530" y="280" width="120" height="55" rx="6" fill="#ffebee" stroke="#ff4757" stroke-width="2" stroke-dasharray="6,3"/>
+        <text x="590" y="302" text-anchor="middle" font-size="9" font-weight="bold" fill="#ff4757">⚠ GRID</text>
+        <text x="590" y="315" text-anchor="middle" font-size="8" fill="#ff4757">OFFLINE</text>
+        <text x="590" y="328" text-anchor="middle" font-size="7.5" fill="#ff4757">PS-3 Disaster</text>
+        <line x1="530" y1="307" x2="520" y2="250" stroke="#ff4757" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+        <text x="470" y="330" font-size="9" fill="#ff4757">✕ DISCONNECTED</text>
+
+        <!-- Power flows labels -->
+        <text x="340" y="268" text-anchor="middle" font-size="8" fill="#cc6600" font-weight="bold">Total Gen: 289kW peak | Avg: 160kW</text>
+
+        <!-- ARIA EMS overlay -->
+        <rect x="270" y="50" width="130" height="50" rx="8" fill="rgba(0,212,255,.1)" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="335" y="72" text-anchor="middle" font-size="9" font-weight="bold" fill="#00d4ff">ARIA EMS</text>
+        <text x="335" y="86" text-anchor="middle" font-size="7.5" fill="#00d4ff">AI Dispatch · 500ms cycle</text>
+        <text x="335" y="96" text-anchor="middle" font-size="7" fill="#6b7fa3">Claude claude-sonnet-4-6</text>
+
+        <!-- Running indicator -->
+        <circle cx="680" cy="20" r="6" fill="#2ed573">
+          <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <text x="665" y="24" text-anchor="end" font-size="8" fill="#2ed573">CALCULATING</text>
+      </svg>
+    </div>
+
+    <!-- Results panel -->
+    <div class="results-panel">
+      <div style="padding:6px 10px;background:#333;border-bottom:1px solid #555;font-size:.72rem;font-weight:700;color:#ff9500;">📊 HOMER Results</div>
+      <div class="homer-result">
+        <h5>⚡ Energy Summary (72h Island Mode)</h5>
+        <table>
+          <tr><td>Solar PV (#1)</td><td id="hr-solar">10,368 kWh</td></tr>
+          <tr><td>Wind (#2)</td><td>6,264 kWh</td></tr>
+          <tr><td>Biomass CHP (#7)</td><td>4,320 kWh</td></tr>
+          <tr><td>BESS Charged (#5)</td><td>3,680 kWh</td></tr>
+          <tr><td>BESS Discharged</td><td>2,540 kWh</td></tr>
+          <tr><td>Unmet Load (P1)</td><td style="color:#2ed573;">0 kWh ✓</td></tr>
+        </table>
+      </div>
+      <div class="homer-result">
+        <h5>💰 Economic Analysis</h5>
+        <table>
+          <tr><td>LCOE</td><td style="color:#2ed573;">Rs 4.2/kWh</td></tr>
+          <tr><td>NPC</td><td>Rs 3.70 Cr</td></tr>
+          <tr><td>CAPEX</td><td>Rs 2.80 Cr</td></tr>
+          <tr><td>Annual O&M</td><td>Rs 18 L/yr</td></tr>
+          <tr><td>Payback</td><td>4.1 Years</td></tr>
+          <tr><td>ROI (5yr)</td><td style="color:#2ed573;">340%</td></tr>
+        </table>
+      </div>
+      <div class="homer-result">
+        <h5>🌱 Environmental</h5>
+        <table>
+          <tr><td>CO₂ Saved/yr</td><td style="color:#69d16f;">5,345 T</td></tr>
+          <tr><td>Renewable Frac.</td><td>100%</td></tr>
+          <tr><td>Diesel Used</td><td style="color:#2ed573;">0 L</td></tr>
+        </table>
+      </div>
+      <div class="homer-result">
+        <h5>⏱ Autonomy Analysis</h5>
+        <table>
+          <tr><td>Normal Ops</td><td style="color:#2ed573;">61.2h</td></tr>
+          <tr><td>Cyclone</td><td style="color:#ffa502;">42.8h</td></tr>
+          <tr><td>Earthquake</td><td style="color:#ffa502;">55.1h</td></tr>
+          <tr><td>Pre-Storm</td><td style="color:#2ed573;">58.8h</td></tr>
+          <tr><td>Target</td><td style="color:#00d4ff;">72h</td></tr>
+        </table>
+      </div>
+      <div class="homer-result">
+        <h5>📈 Optimization Rank #1</h5>
+        <table>
+          <tr><td>Architecture</td><td style="color:#ff9500;">Optimal ✓</td></tr>
+          <tr><td>LCOE Rank</td><td style="color:#2ed573;">#1 of 48</td></tr>
+          <tr><td>Reliability</td><td style="color:#2ed573;">99.7%</td></tr>
+        </table>
+      </div>
+      <div style="padding:8px;margin:8px;">
+        <canvas id="homer-chart" style="width:100%;height:120px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 2: MATLAB/SIMULINK
+════════════════════════════════════════════════ -->
+<div class="tool-panel matlab" id="t-matlab">
+  <div class="menubar">
+    <span>File</span><span>Edit</span><span>View</span><span>Simulation</span><span>Tools</span><span>Help</span>
+    <span style="margin-left:auto;color:#cc2233;font-weight:700;">MATLAB R2024a + Simulink — GridSentinel_IslandMode.slx</span>
+  </div>
+  <div class="ribbon">
+    <div class="ribbon-group"><button class="rbtn green" onclick="runMatlab()">▶ Run</button><label>Simulate</label></div>
+    <div class="ribbon-group"><button class="rbtn">⏹ Stop</button><label>Stop</label></div>
+    <div class="ribbon-group"><button class="rbtn blue">📊 Scope</button><label>View</label></div>
+    <div class="ribbon-group" style="margin-left:20px;font-size:.75rem;color:#aaccee;">
+      <span>Stop Time: <b style="color:#fff;">72 hours (259200s)</b></span>
+      <span>Solver: <b style="color:#fff;">ode45 (variable-step)</b></span>
+      <span id="mat-status" style="color:#2ed573;">● Simulation Complete</span>
+    </div>
+  </div>
+  <div class="workspace">
+    <div class="model-browser">
+      <h4>Simulink Library</h4>
+      <div class="lib-item">🔌 Electrical Sources</div>
+      <div class="lib-item">📡 SimPowerSystems</div>
+      <div class="lib-item">🔋 Battery (Generic)</div>
+      <div class="lib-item">☀ PV Array</div>
+      <div class="lib-item">💨 Wind Turbine</div>
+      <div class="lib-item">⚡ PWM Converter</div>
+      <div class="lib-item">🎛 PI Controller</div>
+      <div class="lib-item">📊 Scope</div>
+      <div class="lib-item">📋 To Workspace</div>
+      <h4 style="margin-top:.8rem;">Model Explorer</h4>
+      <div class="lib-item active" style="background:#1e3a5f;">▶ GridSentinel.slx</div>
+      <div class="lib-item" style="padding-left:20px;">📦 Solar_MPPT</div>
+      <div class="lib-item" style="padding-left:20px;">📦 Wind_Ctrl</div>
+      <div class="lib-item" style="padding-left:20px;">📦 BESS_Model</div>
+      <div class="lib-item" style="padding-left:20px;">📦 Island_Relay</div>
+      <div class="lib-item" style="padding-left:20px;">📦 ARIA_EMS</div>
+    </div>
+    <div class="simulink-canvas" id="matlab-canvas" style="position:relative;">
+      <svg style="width:100%;height:100%;" viewBox="0 0 800 520">
+        <!-- Background -->
+        <defs>
+          <pattern id="mgrid" width="15" height="15" patternUnits="userSpaceOnUse">
+            <path d="M 15 0 L 0 0 0 15" fill="none" stroke="#ddd" stroke-width="0.3"/>
+          </pattern>
+        </defs>
+        <rect width="800" height="520" fill="url(#mgrid)"/>
+
+        <!-- Title -->
+        <text x="400" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#cc2233">GridSentinel Hybrid Microgrid — MATLAB/Simulink Model (PS-3: Island Mode)</text>
+
+        <!-- Solar PV Block -->
+        <rect x="30" y="50" width="100" height="55" rx="3" fill="#fff8e1" stroke="#e65100" stroke-width="1.5"/>
+        <text x="80" y="68" text-anchor="middle" font-size="8" font-weight="bold" fill="#e65100">PV Array</text>
+        <text x="80" y="80" text-anchor="middle" font-size="7">150 kWp</text>
+        <text x="80" y="91" text-anchor="middle" font-size="7" fill="#666">MPPT Boost</text>
+        <text x="80" y="100" text-anchor="middle" font-size="7" fill="#f5a623">η=91%</text>
+        <line x1="130" y1="77" x2="175" y2="77" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- MPPT Controller -->
+        <rect x="175" y="58" width="70" height="40" rx="2" fill="#e8f5e9" stroke="#1b5e20" stroke-width="1"/>
+        <text x="210" y="74" text-anchor="middle" font-size="8" font-weight="bold" fill="#1b5e20">MPPT</text>
+        <text x="210" y="85" text-anchor="middle" font-size="7">P&O Algo</text>
+        <text x="210" y="94" text-anchor="middle" font-size="7" fill="#69d16f">Δ=98W</text>
+        <line x1="245" y1="77" x2="295" y2="77" stroke="#333" stroke-width="1.5"/>
+
+        <!-- Wind Block -->
+        <rect x="30" y="140" width="100" height="55" rx="3" fill="#e3f2fd" stroke="#0277bd" stroke-width="1.5"/>
+        <text x="80" y="158" text-anchor="middle" font-size="8" font-weight="bold" fill="#0277bd">Wind Turbine</text>
+        <text x="80" y="170" text-anchor="middle" font-size="7">PMSG 3×33kW</text>
+        <text x="80" y="181" text-anchor="middle" font-size="7" fill="#666">v=8 m/s</text>
+        <text x="80" y="191" text-anchor="middle" font-size="7" fill="#4fc3f7">η=87%</text>
+        <line x1="130" y1="167" x2="175" y2="167" stroke="#333" stroke-width="1.5"/>
+
+        <!-- AC/DC Converter -->
+        <rect x="175" y="150" width="70" height="40" rx="2" fill="#fff3e0" stroke="#e65100" stroke-width="1"/>
+        <text x="210" y="166" text-anchor="middle" font-size="8" font-weight="bold" fill="#e65100">AC/DC</text>
+        <text x="210" y="177" text-anchor="middle" font-size="7">Rectifier</text>
+        <text x="210" y="186" text-anchor="middle" font-size="7" fill="#ff9800">η=97%</text>
+        <line x1="245" y1="170" x2="295" y2="170" stroke="#333" stroke-width="1.5"/>
+
+        <!-- Biomass Block -->
+        <rect x="30" y="235" width="100" height="55" rx="3" fill="#f1f8e9" stroke="#33691e" stroke-width="1.5"/>
+        <text x="80" y="253" text-anchor="middle" font-size="8" font-weight="bold" fill="#33691e">Biomass CHP</text>
+        <text x="80" y="265" text-anchor="middle" font-size="7">Gasifier+Genset</text>
+        <text x="80" y="276" text-anchor="middle" font-size="7" fill="#666">60kW firm</text>
+        <text x="80" y="287" text-anchor="middle" font-size="7" fill="#8bc34a">η=82% CHP</text>
+        <line x1="130" y1="262" x2="295" y2="262" stroke="#333" stroke-width="1.5"/>
+
+        <!-- DC BUS -->
+        <rect x="295" y="55" width="60" height="220" rx="4" fill="#fff9c4" stroke="#f57f17" stroke-width="2"/>
+        <text x="325" y="165" text-anchor="middle" font-size="9" font-weight="bold" fill="#f57f17" transform="rotate(-90 325 165)">DC BUS — 400V</text>
+
+        <!-- BESS Block -->
+        <rect x="30" y="330" width="100" height="65" rx="3" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.5"/>
+        <text x="80" y="348" text-anchor="middle" font-size="8" font-weight="bold" fill="#6a1b9a">Li-Ion BESS</text>
+        <text x="80" y="360" text-anchor="middle" font-size="7">500kWh / 200kW</text>
+        <text x="80" y="371" text-anchor="middle" font-size="7" fill="#666">SOC: 15–90%</text>
+        <text x="80" y="382" text-anchor="middle" font-size="7" fill="#ab47bc">η_rt=95%</text>
+        <text x="80" y="393" text-anchor="middle" font-size="7" fill="#9c27b0">Cdeg=0.028%/cyc</text>
+        <line x1="130" y1="362" x2="295" y2="262" stroke="#9c27b0" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+        <!-- DC/AC Inverter -->
+        <rect x="390" y="120" width="80" height="60" rx="3" fill="#e8eaf6" stroke="#3f51b5" stroke-width="1.5"/>
+        <text x="430" y="142" text-anchor="middle" font-size="8" font-weight="bold" fill="#3f51b5">DC/AC</text>
+        <text x="430" y="154" text-anchor="middle" font-size="7">Grid-Forming</text>
+        <text x="430" y="165" text-anchor="middle" font-size="7">Inverter</text>
+        <text x="430" y="176" text-anchor="middle" font-size="7" fill="#5c6bc0">η=97%</text>
+        <line x1="355" y1="165" x2="390" y2="150" stroke="#333" stroke-width="1.5"/>
+        <line x1="470" y1="150" x2="520" y2="150" stroke="#333" stroke-width="1.5"/>
+
+        <!-- Island Relay -->
+        <rect x="520" y="120" width="75" height="60" rx="3" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+        <text x="557" y="140" text-anchor="middle" font-size="8" font-weight="bold" fill="#c62828">Island</text>
+        <text x="557" y="152" text-anchor="middle" font-size="7">Relay</text>
+        <text x="557" y="163" text-anchor="middle" font-size="7">IEC 62116</text>
+        <text x="557" y="174" text-anchor="middle" font-size="8" fill="#2ed573">T=1.8s ✓</text>
+        <line x1="595" y1="150" x2="640" y2="150" stroke="#333" stroke-width="1.5"/>
+
+        <!-- ARIA EMS Block -->
+        <rect x="390" y="40" width="140" height="65" rx="5" fill="rgba(0,30,50,.8)" stroke="#00d4ff" stroke-width="2"/>
+        <text x="460" y="62" text-anchor="middle" font-size="9" font-weight="bold" fill="#00d4ff">ARIA EMS Controller</text>
+        <text x="460" y="75" text-anchor="middle" font-size="7.5" fill="#aad8f0">RL Dispatch · LSTM Forecast</text>
+        <text x="460" y="86" text-anchor="middle" font-size="7" fill="#6b7fa3">Claude claude-sonnet-4-6 · 500ms</text>
+        <text x="460" y="97" text-anchor="middle" font-size="7.5" fill="#00ff88">Autonomy: 61.2h ✓</text>
+        <!-- control lines from EMS -->
+        <line x1="430" y1="105" x2="430" y2="120" stroke="#00d4ff" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="460" y1="105" x2="557" y2="120" stroke="#00d4ff" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <!-- AC BUS -->
+        <line x1="640" y1="80" x2="640" y2="420" stroke="#cc6600" stroke-width="4"/>
+        <text x="650" y="260" font-size="9" fill="#cc6600" font-weight="bold" transform="rotate(90 650 260)">AC BUS 230V/50Hz</text>
+
+        <!-- Loads -->
+        <rect x="680" y="60" width="110" height="38" rx="3" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+        <text x="735" y="78" text-anchor="middle" font-size="8" font-weight="bold" fill="#c62828">🏥 P1 Critical</text>
+        <text x="735" y="90" text-anchor="middle" font-size="7" fill="#666">145kW (Hospital+Water+Tel)</text>
+        <line x1="640" y1="79" x2="680" y2="79" stroke="#e91e63" stroke-width="1.5"/>
+
+        <rect x="680" y="115" width="110" height="30" rx="3" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+        <text x="735" y="128" text-anchor="middle" font-size="8" fill="#e65100">🏫 P2 Load: 57kW</text>
+        <text x="735" y="140" text-anchor="middle" font-size="7" fill="#666">Shed at SOC&lt;20%</text>
+        <line x1="640" y1="130" x2="680" y2="130" stroke="#e65100" stroke-width="1.5"/>
+
+        <rect x="680" y="160" width="110" height="30" rx="3" fill="#f1f8e9" stroke="#558b2f" stroke-width="1.5"/>
+        <text x="735" y="173" text-anchor="middle" font-size="8" fill="#558b2f">🏘 P3 Load: 86kW</text>
+        <text x="735" y="185" text-anchor="middle" font-size="7" fill="#666">Shed at SOC&lt;35%</text>
+        <line x1="640" y1="175" x2="680" y2="175" stroke="#558b2f" stroke-width="1.5"/>
+
+        <!-- Scope Block -->
+        <rect x="380" y="350" width="70" height="50" rx="3" fill="#000" stroke="#cc2233" stroke-width="1.5"/>
+        <text x="415" y="368" text-anchor="middle" font-size="7.5" fill="#cc2233">📊 Scope</text>
+        <polyline points="388,388 395,375 402,385 409,370 416,382 423,372 430,380 437,388 444,373" fill="none" stroke="#2ed573" stroke-width="1.2"/>
+        <text x="415" y="398" text-anchor="middle" font-size="7" fill="#666">V·I·SOC·f</text>
+
+        <!-- Simulation info box -->
+        <rect x="30" y="440" width="770" height="60" rx="3" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+        <text x="40" y="456" font-size="8" font-weight="bold" fill="#cc2233">MATLAB Simulation Results:</text>
+        <text x="40" y="470" font-size="7.5" fill="#333">Islanding Response: 1.8s ✓ | Voltage Dip: 4.2% (≤5% limit) ✓ | Freq Deviation: 0.08Hz (≤0.2Hz) ✓ | BESS SOC range: 15%–90% ✓</text>
+        <text x="40" y="484" font-size="7.5" fill="#333">Grid-forming inverter stable at 3.0s | THD: 1.8% (≤5%) ✓ | Power factor: 0.97 ✓ | Simulation time: 259,200s | Solver: ode45</text>
+        <text x="40" y="496" font-size="7.5" fill="#006600">STATUS: Simulation complete (0 errors, 2 warnings) — All PS-3 islanding criteria PASSED</text>
+      </svg>
+
+      <!-- Scope window overlay -->
+      <div class="scope-window" id="matlab-scope">
+        <h5>🔬 Oscilloscope — Voltage & Current (Island Transition)</h5>
+        <canvas id="scope-canvas" style="width:320px;height:90px;background:#000;"></canvas>
+        <div style="display:flex;gap:10px;font-size:.65rem;margin-top:4px;">
+          <span style="color:#2ed573;">— Vabc (grid-forming)</span>
+          <span style="color:#ff9500;">— SOC</span>
+          <span style="color:#4fc3f7;">— Iabc</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 3: TINKERCAD
+════════════════════════════════════════════════ -->
+<div class="tool-panel tinkercad" id="t-tinkercad">
+  <div class="tc-header">
+    <div class="logo">🎨 Tinkercad — GridSentinel Microgrid Circuit</div>
+    <div class="hbtns">
+      <button style="background:#fff;color:#ff6b00;">Export</button>
+      <button style="background:#ff6b00;color:#fff;" onclick="runTinkercad()">▶ Start Simulation</button>
+    </div>
+  </div>
+  <div style="background:#2a2a4a;padding:4px 10px;font-size:.7rem;color:#aaa;display:flex;gap:20px;border-bottom:1px solid #333;">
+    <span>Design</span><span style="color:#ff6b00;border-bottom:2px solid #ff6b00;padding-bottom:2px;">Circuit</span><span>Codeblocks</span>
+    <span style="margin-left:auto;color:#2ed573;" id="tc-status">● Simulation Ready</span>
+  </div>
+  <div class="tc-workspace">
+    <div class="tc-components">
+      <h4>Search Components</h4>
+      <input style="width:100%;background:#333;border:1px solid #555;border-radius:3px;padding:4px 7px;color:#fff;font-size:.72rem;margin-bottom:6px;" placeholder="🔍 Search...">
+      <h4>Power Sources</h4>
+      <div class="tc-comp">🔋 9V Battery</div>
+      <div class="tc-comp">⚡ Power Supply (DC)</div>
+      <div class="tc-comp">☀ Photovoltaic Cell</div>
+      <h4>Components</h4>
+      <div class="tc-comp">🔌 Resistor</div>
+      <div class="tc-comp">📦 Capacitor</div>
+      <div class="tc-comp">🔁 Inductor</div>
+      <div class="tc-comp">💡 LED</div>
+      <div class="tc-comp">🎛 Arduino Uno</div>
+      <div class="tc-comp">📡 Sensor (NTC)</div>
+      <div class="tc-comp">🔧 MOSFET</div>
+      <div class="tc-comp">⚡ Relay (SPDT)</div>
+      <div class="tc-comp">📊 Multimeter</div>
+      <div class="tc-comp">📈 Oscilloscope</div>
+      <h4>Measurements</h4>
+      <div class="tc-comp">V Voltmeter</div>
+      <div class="tc-comp">A Ammeter</div>
+      <div class="tc-comp">Ω Ohmmeter</div>
+    </div>
+    <div class="tc-canvas" id="tc-canvas">
+      <svg style="width:100%;height:100%;" viewBox="0 0 750 550">
+        <rect width="750" height="550" fill="#1e1e1e"/>
+        <!-- Grid -->
+        <defs>
+          <pattern id="tcgrid" width="25" height="25" patternUnits="userSpaceOnUse">
+            <circle cx="12.5" cy="12.5" r="0.8" fill="#333"/>
+          </pattern>
+        </defs>
+        <rect width="750" height="550" fill="url(#tcgrid)"/>
+
+        <!-- Title -->
+        <text x="375" y="22" text-anchor="middle" font-size="11" fill="#ff6b00" font-weight="bold">Tinkercad Circuit — GridSentinel BESS Control + Island Relay (Arduino UNO)</text>
+
+        <!-- Arduino UNO -->
+        <rect x="290" y="190" width="170" height="130" rx="5" fill="#1a6e31" stroke="#2ed573" stroke-width="2"/>
+        <text x="375" y="214" text-anchor="middle" font-size="10" font-weight="bold" fill="#fff">Arduino UNO</text>
+        <text x="375" y="228" text-anchor="middle" font-size="8" fill="#aaffaa">ARIA EMS Controller</text>
+        <!-- Digital pins -->
+        <rect x="300" y="236" width="8" height="70" rx="1" fill="#ccc"/>
+        <text x="312" y="244" font-size="6" fill="#aaa">D0</text>
+        <text x="312" y="256" font-size="6" fill="#aaa">D1-TX</text>
+        <text x="312" y="268" font-size="6" fill="#aaa">D2-RELAY</text>
+        <text x="312" y="280" font-size="6" fill="#aaa">D3-PWM</text>
+        <text x="312" y="292" font-size="6" fill="#aaa">D4-LED</text>
+        <text x="312" y="304" font-size="6" fill="#aaa">D5-SOC</text>
+        <!-- Analog pins -->
+        <rect x="452" y="236" width="8" height="60" rx="1" fill="#ccc"/>
+        <text x="444" y="244" font-size="6" fill="#aaa" text-anchor="end">A0-Vsolar</text>
+        <text x="444" y="256" font-size="6" fill="#aaa" text-anchor="end">A1-Vwind</text>
+        <text x="444" y="268" font-size="6" fill="#aaa" text-anchor="end">A2-Vbio</text>
+        <text x="444" y="280" font-size="6" fill="#aaa" text-anchor="end">A3-IBESS</text>
+        <text x="444" y="292" font-size="6" fill="#aaa" text-anchor="end">A4-SDA</text>
+
+        <!-- Solar panel (simplified) -->
+        <rect x="40" y="60" width="90" height="60" rx="3" fill="#1a237e" stroke="#f5a623" stroke-width="1.5"/>
+        <!-- Solar cell grid pattern -->
+        <line x1="55" y1="60" x2="55" y2="120" stroke="#2196f3" stroke-width=".5"/>
+        <line x1="70" y1="60" x2="70" y2="120" stroke="#2196f3" stroke-width=".5"/>
+        <line x1="85" y1="60" x2="85" y2="120" stroke="#2196f3" stroke-width=".5"/>
+        <line x1="100" y1="60" x2="100" y2="120" stroke="#2196f3" stroke-width=".5"/>
+        <line x1="115" y1="60" x2="115" y2="120" stroke="#2196f3" stroke-width=".5"/>
+        <line x1="40" y1="80" x2="130" y2="80" stroke="#2196f3" stroke-width=".5"/>
+        <line x1="40" y1="100" x2="130" y2="100" stroke="#2196f3" stroke-width=".5"/>
+        <text x="85" y="138" text-anchor="middle" font-size="8" fill="#f5a623">PV: Voc=22V, Isc=8.5A</text>
+        <!-- PV wire -->
+        <line x1="130" y1="80" x2="200" y2="80" stroke="#ff0000" stroke-width="2"/>
+        <line x1="130" y1="100" x2="200" y2="100" stroke="#000" stroke-width="2"/>
+
+        <!-- MPPT Boost Converter -->
+        <rect x="200" y="55" width="80" height="60" rx="3" fill="#263238" stroke="#ffa500" stroke-width="1.5"/>
+        <text x="240" y="78" text-anchor="middle" font-size="8" fill="#ffa500">MPPT Boost</text>
+        <text x="240" y="90" text-anchor="middle" font-size="7" fill="#ccc">L: 2.2mH</text>
+        <text x="240" y="102" text-anchor="middle" font-size="7" fill="#ccc">C: 470μF</text>
+        <text x="240" y="113" text-anchor="middle" font-size="7" fill="#69d16f">Vout: 48V</text>
+
+        <!-- BESS Model -->
+        <rect x="60" y="220" width="110" height="80" rx="4" fill="#1a0030" stroke="#a855f7" stroke-width="2"/>
+        <text x="115" y="242" text-anchor="middle" font-size="9" font-weight="bold" fill="#a855f7">Li-Ion BESS</text>
+        <text x="115" y="255" text-anchor="middle" font-size="7" fill="#ccc">Cap: 500kWh → 10Ah</text>
+        <text x="115" y="266" text-anchor="middle" font-size="7" fill="#ccc">(scaled model)</text>
+        <text x="115" y="277" text-anchor="middle" font-size="7" fill="#ccc">V_nom: 48V</text>
+        <text x="115" y="289" text-anchor="middle" font-size="7" fill="#a855f7">SOC: 78%</text>
+        <!-- SOC indicator LED row -->
+        <circle cx="90" cy="300" r="4" fill="#2ed573">
+          <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="103" cy="300" r="4" fill="#2ed573">
+          <animate attributeName="opacity" values="1;0.3;1" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="116" cy="300" r="4" fill="#ffa502"/>
+        <circle cx="129" cy="300" r="4" fill="#333"/>
+        <circle cx="142" cy="300" r="4" fill="#333"/>
+        <text x="115" y="314" text-anchor="middle" font-size="7" fill="#aaa">SOC LEDs</text>
+
+        <!-- Island Relay -->
+        <rect x="500" y="155" width="110" height="75" rx="3" fill="#1a0000" stroke="#ff4757" stroke-width="2"/>
+        <text x="555" y="177" text-anchor="middle" font-size="9" font-weight="bold" fill="#ff4757">ISLAND RELAY</text>
+        <text x="555" y="191" text-anchor="middle" font-size="7.5" fill="#ccc">SPDT · 12V coil</text>
+        <text x="555" y="203" text-anchor="middle" font-size="7" fill="#ccc">IEC 62116 trigger</text>
+        <!-- relay symbol -->
+        <rect x="520" y="212" width="14" height="8" fill="none" stroke="#ff4757" stroke-width="1"/>
+        <circle cx="548" cy="216" r="4" fill="none" stroke="#ff4757" stroke-width="1"/>
+        <line x1="562" y1="216" x2="575" y2="208" stroke="#ff4757" stroke-width="1.5"/>
+        <line x1="575" y1="208" x2="596" y2="208" stroke="#ff4757" stroke-width="1.5"/>
+        <text x="555" y="228" text-anchor="middle" font-size="7" fill="#2ed573">T_trip=1.8s ✓</text>
+
+        <!-- Voltmeter -->
+        <circle cx="640" cy="260" r="25" fill="none" stroke="#666" stroke-width="2"/>
+        <text x="640" y="256" text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">V</text>
+        <text x="640" y="270" text-anchor="middle" font-size="7.5" fill="#2ed573">230.4V</text>
+
+        <!-- Ammeter -->
+        <circle cx="640" cy="330" r="25" fill="none" stroke="#666" stroke-width="2"/>
+        <text x="640" y="326" text-anchor="middle" font-size="9" fill="#fff" font-weight="bold">A</text>
+        <text x="640" y="340" text-anchor="middle" font-size="7.5" fill="#2ed573">128.4A</text>
+
+        <!-- Wires connecting Arduino to relay (control wire) -->
+        <line x1="300" y1="268" x2="265" y2="268" stroke="#00ff00" stroke-width="1.5"/>
+        <line x1="265" y1="268" x2="265" y2="192" stroke="#00ff00" stroke-width="1.5"/>
+        <line x1="265" y1="192" x2="500" y2="192" stroke="#00ff00" stroke-width="1.5"/>
+        <text x="380" y="188" font-size="7" fill="#00ff00">D2→RELAY CONTROL</text>
+
+        <!-- Wire: Arduino A0 to solar -->
+        <line x1="460" y1="244" x2="490" y2="244" stroke="#ffa500" stroke-width="1.2"/>
+        <line x1="490" y1="244" x2="490" y2="80" stroke="#ffa500" stroke-width="1.2"/>
+        <line x1="490" y1="80" x2="280" y2="80" stroke="#ffa500" stroke-width="1.2"/>
+        <text x="490" y="160" font-size="7" fill="#ffa500" transform="rotate(90 490 160)">A0 Vsolar sense</text>
+
+        <!-- Breadboard hint -->
+        <rect x="100" y="360" width="560" height="50" rx="3" fill="#e4d5a0" stroke="#ccc" stroke-width="1"/>
+        <!-- Breadboard holes -->
+        <text x="375" y="382" text-anchor="middle" font-size="8" fill="#666" font-weight="bold">Breadboard — Power Distribution</text>
+        <text x="375" y="398" text-anchor="middle" font-size="7.5" fill="#666">+48V rail (red) | GND rail (black) | 5V MCU (blue) | Signal lines (green)</text>
+
+        <!-- Status -->
+        <rect x="30" y="460" width="690" height="40" rx="3" fill="#0a1a0a" stroke="#2ed573" stroke-width="1"/>
+        <text x="40" y="477" font-size="8" fill="#2ed573" font-weight="bold">✓ Tinkercad Simulation Running:</text>
+        <text x="40" y="491" font-size="7.5" fill="#ccc">Vsolar=22V·Isolar=6.8A | BESS V=48V·I=28A·SOC=78% | Relay: ISLAND MODE ACTIVE | Arduino: dispatch loop 500ms | LED: P1✓ P2✓ P3○</text>
+      </svg>
+    </div>
+    <div class="tc-panel">
+      <h4>⚡ Simulation Output</h4>
+      <div style="font-size:.73rem;display:flex;flex-direction:column;gap:4px;">
+        <div style="padding:4px 6px;background:#1a3a1a;border-radius:3px;color:#2ed573;">✓ V_solar = 22.4V</div>
+        <div style="padding:4px 6px;background:#1a3a1a;border-radius:3px;color:#2ed573;">✓ I_solar = 6.8A</div>
+        <div style="padding:4px 6px;background:#1a2a3a;border-radius:3px;color:#4fc3f7;">✓ V_BESS = 48.2V</div>
+        <div style="padding:4px 6px;background:#1a2a3a;border-radius:3px;color:#4fc3f7;">✓ I_BESS = +28A</div>
+        <div style="padding:4px 6px;background:#2a1a3a;border-radius:3px;color:#a855f7;">✓ SOC = 78%</div>
+        <div style="padding:4px 6px;background:#3a1a1a;border-radius:3px;color:#ff6b00;">✓ Relay: ISLAND</div>
+        <div style="padding:4px 6px;background:#1a3a1a;border-radius:3px;color:#2ed573;">✓ V_load = 230V</div>
+        <div style="padding:4px 6px;background:#1a3a1a;border-radius:3px;color:#2ed573;">✓ P1: 145kW ON</div>
+      </div>
+      <h4 style="margin-top:8px;">🔌 Component Values</h4>
+      <div style="font-size:.7rem;color:#aaa;line-height:1.8;">
+        R_load_P1: 0.365Ω<br>L_boost: 2.2 mH<br>C_filter: 470 μF<br>R_sense: 0.1Ω<br>MOSFET: IRF540<br>Relay: 12V/10A SPDT
+      </div>
+      <h4 style="margin-top:8px;">📋 Serial Monitor</h4>
+      <div style="background:#000;padding:5px;border-radius:3px;font-family:monospace;font-size:.65rem;color:#00ff00;height:80px;overflow-y:auto;" id="tc-serial">
+        ARIA_BOOT...<br>
+        SOC=78 P1=ON P2=ON<br>
+        GEN=289kW LOAD=231kW<br>
+        SURPLUS=58kW→BESS+<br>
+        RELAY=ISLAND T=1.8s<br>
+        DISPATCH_OK<br>
+        <span id="tc-serial-live"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 4: NI MULTISIM
+════════════════════════════════════════════════ -->
+<div class="tool-panel multisim" id="t-multisim">
+  <div class="ms-header">
+    <div class="logo">NI Multisim 14.3</div>
+    <span style="color:#aad4ff;font-size:.8rem;">GridSentinel_BESS_Inverter_Control.ms14</span>
+  </div>
+  <div class="ms-toolbar">
+    <button class="ms-btn" style="background:#006600;color:#fff;" onclick="runMultisim()">▶ Run</button>
+    <button class="ms-btn">⏸ Pause</button>
+    <button class="ms-btn">⏹ Stop</button>
+    <button class="ms-btn">📊 Analysis</button>
+    <button class="ms-btn">🔬 Instruments</button>
+    <button class="ms-btn">📋 Reports</button>
+    <span style="margin-left:auto;font-size:.7rem;color:#006600;" id="ms-status">● Simulation Running</span>
+  </div>
+  <div class="ms-workspace">
+    <div class="ms-parts">
+      <h4>Components</h4>
+      <div style="font-size:.72rem;display:flex;flex-direction:column;gap:2px;">
+        <div style="padding:2px 5px;cursor:pointer;">⚡ DC Sources</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ V1 (PV Model)</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ Batt1 (BESS)</div>
+        <div style="padding:2px 5px;cursor:pointer;">📦 Passives</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ L1 2.2mH</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ C1 470μF</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ R1–R6</div>
+        <div style="padding:2px 5px;cursor:pointer;">🔧 Transistors</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ MOSFET N-Ch</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ IGBT Module</div>
+        <div style="padding:2px 5px;cursor:pointer;">📡 Mixed</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ Relay SPDT</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ OpAmp LM741</div>
+        <div style="padding:2px 5px;cursor:pointer;color:#003366;">→ 555 Timer</div>
+        <h4>Instruments</h4>
+        <div style="padding:2px 5px;cursor:pointer;">📊 Oscilloscope</div>
+        <div style="padding:2px 5px;cursor:pointer;">📈 Bode Plotter</div>
+        <div style="padding:2px 5px;cursor:pointer;">Ω Multimeter</div>
+        <div style="padding:2px 5px;cursor:pointer;">⚡ Wattmeter</div>
+      </div>
+    </div>
+    <div class="ms-canvas" id="ms-canvas" style="position:relative;">
+      <svg style="width:100%;height:100%;" viewBox="0 0 650 520">
+        <rect width="650" height="520" fill="#fff"/>
+        <defs>
+          <pattern id="msgrid" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e8e8e8" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="650" height="520" fill="url(#msgrid)"/>
+
+        <text x="325" y="18" text-anchor="middle" font-size="10" font-weight="bold" fill="#003366">NI Multisim — BESS Bidirectional DC-DC Converter + Island Relay Control</text>
+
+        <!-- PV Source (left) -->
+        <circle cx="70" cy="120" r="22" fill="#fff" stroke="#e65100" stroke-width="1.5"/>
+        <text x="70" y="116" text-anchor="middle" font-size="8" fill="#e65100">+</text>
+        <text x="70" y="128" text-anchor="middle" font-size="8" fill="#e65100">−</text>
+        <text x="70" y="148" text-anchor="middle" font-size="7.5" fill="#666">V1=48V</text>
+        <text x="70" y="158" text-anchor="middle" font-size="7" fill="#f5a623">PV Model</text>
+        <!-- V+ wire -->
+        <line x1="70" y1="98" x2="70" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <line x1="70" y1="70" x2="140" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <!-- GND wire -->
+        <line x1="70" y1="142" x2="70" y2="175" stroke="#000" stroke-width="1.5"/>
+        <line x1="70" y1="175" x2="140" y2="175" stroke="#000" stroke-width="1.5"/>
+
+        <!-- Boost inductor L1 -->
+        <text x="155" y="60" text-anchor="middle" font-size="7.5" fill="#333">L1=2.2mH</text>
+        <!-- Inductor symbol -->
+        <path d="M140,70 Q148,60 155,70 Q162,60 169,70 Q176,60 183,70 Q190,60 197,70" fill="none" stroke="#333" stroke-width="1.5"/>
+        <line x1="197" y1="70" x2="230" y2="70" stroke="#f00" stroke-width="1.5"/>
+
+        <!-- MOSFET Q1 -->
+        <rect x="230" y="55" width="20" height="30" rx="2" fill="#fff" stroke="#333" stroke-width="1.5"/>
+        <line x1="240" y1="55" x2="240" y2="45" stroke="#333" stroke-width="1.5"/><!-- Gate -->
+        <text x="225" y="45" font-size="7" fill="#333">G</text>
+        <text x="235" y="95" text-anchor="middle" font-size="7" fill="#333">Q1 MOSFET</text>
+        <line x1="240" y1="85" x2="240" y2="175" stroke="#000" stroke-width="1.5"/><!-- Source to GND -->
+
+        <!-- Diode D1 -->
+        <polygon points="255,70 275,60 275,80" fill="#ffcc00" stroke="#333" stroke-width="1"/>
+        <line x1="275" y1="60" x2="275" y2="80" stroke="#333" stroke-width="1.5"/>
+        <line x1="255" y1="70" x2="248" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <line x1="275" y1="70" x2="295" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <text x="265" y="55" text-anchor="middle" font-size="7" fill="#666">D1</text>
+
+        <!-- C1 Capacitor -->
+        <line x1="295" y1="70" x2="335" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <line x1="335" y1="50" x2="335" y2="90" stroke="#333" stroke-width="2.5"/>
+        <line x1="345" y1="50" x2="345" y2="90" stroke="#333" stroke-width="2.5"/>
+        <line x1="345" y1="70" x2="370" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <text x="340" y="45" text-anchor="middle" font-size="7.5" fill="#333">C1=470μF</text>
+        <line x1="335" y1="175" x2="335" y2="95"/>
+        <line x1="140" y1="175" x2="450" y2="175" stroke="#000" stroke-width="1.5"/><!-- GND bus -->
+
+        <!-- Bidirectional BESS block -->
+        <rect x="60" y="240" width="120" height="90" rx="4" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+        <text x="120" y="265" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#6a1b9a">BESS Model</text>
+        <text x="120" y="278" text-anchor="middle" font-size="7.5" fill="#666">E=9.6V (scaled)</text>
+        <text x="120" y="289" text-anchor="middle" font-size="7" fill="#666">R_int=0.05Ω</text>
+        <text x="120" y="300" text-anchor="middle" font-size="7" fill="#9c27b0">SOC=78%</text>
+        <text x="120" y="312" text-anchor="middle" font-size="7" fill="#2ed573">Charging: +28A</text>
+        <text x="120" y="322" text-anchor="middle" font-size="7" fill="#aaa">Cdeg=0.028%/cyc</text>
+
+        <!-- PI Controller -->
+        <rect x="260" y="200" width="100" height="60" rx="3" fill="#e8eaf6" stroke="#3f51b5" stroke-width="1.5"/>
+        <text x="310" y="220" text-anchor="middle" font-size="8.5" fill="#283593" font-weight="bold">PI Controller</text>
+        <text x="310" y="232" text-anchor="middle" font-size="7.5" fill="#333">Kp=0.8 Ki=0.2</text>
+        <text x="310" y="244" text-anchor="middle" font-size="7" fill="#666">SOC Reference</text>
+        <text x="310" y="256" text-anchor="middle" font-size="7.5" fill="#5c6bc0">15% ≤ SOC ≤ 90%</text>
+
+        <!-- Oscilloscope instrument -->
+        <rect x="430" y="60" width="190" height="120" rx="3" fill="#000" stroke="#cc2233" stroke-width="2"/>
+        <text x="525" y="78" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#cc2233">OSCILLOSCOPE XSC1</text>
+        <rect x="435" y="82" width="180" height="85" rx="2" fill="#001100"/>
+        <!-- Waveform A: Voltage -->
+        <polyline points="438,140 458,120 478,130 498,110 518,125 538,115 558,128 578,112 598,124 608,115" fill="none" stroke="#2ed573" stroke-width="1.2"/>
+        <!-- Waveform B: Current -->
+        <polyline points="438,155 448,148 468,160 488,145 508,158 528,143 548,156 568,141 588,154 608,142" fill="none" stroke="#ff9500" stroke-width="1.2"/>
+        <text x="440" y="93" font-size="6.5" fill="#2ed573">CH_A: V_bus=48.2V</text>
+        <text x="440" y="103" font-size="6.5" fill="#ff9500">CH_B: I_bess=+28A</text>
+        <text x="525" y="192" text-anchor="middle" font-size="7" fill="#666">Timebase: 50ms/div</text>
+
+        <!-- Wattmeter -->
+        <rect x="430" y="200" width="130" height="60" rx="3" fill="#f0f8ff" stroke="#003366" stroke-width="1.5"/>
+        <text x="495" y="218" text-anchor="middle" font-size="8.5" fill="#003366" font-weight="bold">WATTMETER XWM1</text>
+        <text x="495" y="232" text-anchor="middle" font-size="9" fill="#006600" font-weight="bold">P = 1,344 W</text>
+        <text x="495" y="244" text-anchor="middle" font-size="7.5" fill="#333">(scaled: 134.4 kW sys)</text>
+        <text x="495" y="256" text-anchor="middle" font-size="7.5" fill="#666">PF = 0.97 | Q = 41 VAR</text>
+
+        <!-- Bode Plotter -->
+        <rect x="430" y="280" width="190" height="110" rx="3" fill="#000" stroke="#0077bb" stroke-width="1.5"/>
+        <text x="525" y="296" text-anchor="middle" font-size="8.5" fill="#0077bb" font-weight="bold">BODE PLOTTER XBP1</text>
+        <text x="440" y="308" font-size="6.5" fill="#aaa">Gain Margin: 18.4 dB</text>
+        <text x="440" y="318" font-size="6.5" fill="#aaa">Phase Margin: 62°</text>
+        <!-- Bode curve -->
+        <polyline points="435,350 450,345 470,340 490,332 510,320 530,305 550,303 570,303 580,303 600,304 615,308" fill="none" stroke="#00aaff" stroke-width="1.2"/>
+        <text x="440" y="385" font-size="6" fill="#666">10Hz           100Hz           1kHz</text>
+        <text x="615" y="385" font-size="6" fill="#666">Stable ✓</text>
+
+        <!-- Status -->
+        <rect x="30" y="450" width="590" height="50" rx="3" fill="#f0fff0" stroke="#2ed573" stroke-width="1"/>
+        <text x="40" y="466" font-size="8" font-weight="bold" fill="#006600">NI Multisim Simulation Results:</text>
+        <text x="40" y="480" font-size="7.5" fill="#333">V_bus=48.2V (±0.8%) ✓ | I_bess=+28A (charging) ✓ | SOC=78% ✓ | PI Control stable | THD=1.8% ✓</text>
+        <text x="40" y="494" font-size="7.5" fill="#006600">Bode: GM=18.4dB, PM=62° — System STABLE | Switching freq=10kHz | Efficiency=95.2% ✓</text>
+      </svg>
+    </div>
+    <div class="ms-instruments">
+      <h4>Measurements</h4>
+      <div style="font-size:.72rem;display:flex;flex-direction:column;gap:5px;">
+        <div style="padding:4px;background:#e8ffe8;border:1px solid #006600;border-radius:3px;">V_bus: <b style="color:#006600;">48.2V</b></div>
+        <div style="padding:4px;background:#e8ffe8;border:1px solid #006600;border-radius:3px;">I_bess: <b style="color:#006600;">+28A</b></div>
+        <div style="padding:4px;background:#e8f0ff;border:1px solid #003366;border-radius:3px;">SOC: <b style="color:#003366;">78%</b></div>
+        <div style="padding:4px;background:#e8ffe8;border:1px solid #006600;border-radius:3px;">P_out: <b style="color:#006600;">134.4kW</b></div>
+        <div style="padding:4px;background:#fff3e0;border:1px solid #e65100;border-radius:3px;">η: <b style="color:#e65100;">95.2%</b></div>
+        <div style="padding:4px;background:#e8ffe8;border:1px solid #006600;border-radius:3px;">THD: <b style="color:#006600;">1.8%</b></div>
+        <div style="padding:4px;background:#e8ffe8;border:1px solid #006600;border-radius:3px;">PF: <b style="color:#006600;">0.97</b></div>
+        <div style="padding:4px;background:#e8ffe8;border:1px solid #006600;border-radius:3px;">f_sw: <b style="color:#006600;">10kHz</b></div>
+      </div>
+      <h4 style="margin-top:8px;">Analysis</h4>
+      <div style="font-size:.7rem;color:#333;line-height:1.7;">
+        DC Operating Point: ✓<br>
+        Transient (0–200ms): ✓<br>
+        AC Sweep (1Hz–10kHz): ✓<br>
+        Parameter Sweep: ✓<br>
+        Monte Carlo: ✓<br>
+        Worst Case: ✓
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 5: KICAD
+════════════════════════════════════════════════ -->
+<div class="tool-panel kicad" id="t-kicad">
+  <div class="kc-header">
+    <span style="color:#0078d7;font-weight:700;">KiCad 7.0</span>
+    <span>File</span><span>Edit</span><span>View</span><span>Place</span><span>Route</span><span>Inspect</span><span>Tools</span>
+    <span style="margin-left:auto;color:#0078d7;">GridSentinel_IslandRelay_PCB.kicad_pcb</span>
+  </div>
+  <div class="kc-toolbar">
+    <button class="kc-tbtn">📐 Schematic</button>
+    <button class="kc-tbtn" style="background:#0078d7;color:#fff;">🔲 PCB Layout</button>
+    <button class="kc-tbtn">📊 3D View</button>
+    <button class="kc-tbtn">✓ DRC Check</button>
+    <button class="kc-tbtn">⚙ Design Rules</button>
+    <span style="margin-left:auto;font-size:.7rem;color:#2ed573;" id="kc-status">● DRC: 0 Errors, 0 Warnings</span>
+  </div>
+  <div class="kc-workspace">
+    <div class="kc-canvas" id="kc-canvas">
+      <svg style="width:100%;height:100%;" viewBox="0 0 750 560">
+        <rect width="750" height="560" fill="#1a1a1a"/>
+        <!-- PCB outline -->
+        <rect x="50" y="50" width="640" height="460" rx="5" fill="#2a2a0a" stroke="#ffff00" stroke-width="2"/>
+        <!-- PCB title -->
+        <text x="375" y="30" text-anchor="middle" font-size="10" fill="#0078d7" font-weight="bold">KiCad PCB Layout — GridSentinel Island Relay Control Board</text>
+        <!-- Copper pours -->
+        <rect x="55" y="55" width="630" height="445" rx="3" fill="#1a3a1a" opacity="0.5"/>
+
+        <!-- Component U1: Arduino-style MCU -->
+        <rect x="300" y="160" width="150" height="200" rx="3" fill="#006633" stroke="#00ff88" stroke-width="1.5"/>
+        <text x="375" y="185" text-anchor="middle" font-size="9" fill="#00ff88" font-weight="bold">U1 — MCU</text>
+        <text x="375" y="198" text-anchor="middle" font-size="7.5" fill="#aaffaa">ARIA EMS Controller</text>
+        <!-- MCU pins left -->
+        <line x1="300" y1="210" x2="280" y2="210" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="225" x2="280" y2="225" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="240" x2="280" y2="240" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="255" x2="280" y2="255" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="270" x2="280" y2="270" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="285" x2="280" y2="285" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="300" x2="280" y2="300" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="300" y1="315" x2="280" y2="315" stroke="#c0c000" stroke-width="1.5"/>
+        <!-- MCU pins right -->
+        <line x1="450" y1="210" x2="470" y2="210" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="450" y1="225" x2="470" y2="225" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="450" y1="240" x2="470" y2="240" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="450" y1="255" x2="470" y2="255" stroke="#c0c000" stroke-width="1.5"/>
+        <line x1="450" y1="270" x2="470" y2="270" stroke="#c0c000" stroke-width="1.5"/>
+
+        <!-- Component K1: Relay -->
+        <rect x="550" y="130" width="100" height="80" rx="3" fill="#220000" stroke="#ff4444" stroke-width="1.5"/>
+        <text x="600" y="155" text-anchor="middle" font-size="9" fill="#ff4444" font-weight="bold">K1</text>
+        <text x="600" y="168" text-anchor="middle" font-size="7.5" fill="#ffaaaa">Island Relay</text>
+        <text x="600" y="181" text-anchor="middle" font-size="7" fill="#ff8888">IEC 62116</text>
+        <text x="600" y="194" text-anchor="middle" font-size="7" fill="#2ed573">Rcoil=240Ω</text>
+        <!-- Relay pins -->
+        <line x1="550" y1="155" x2="470" y2="255" stroke="#ff4444" stroke-width="1.2"/>
+        <circle cx="470" cy="255" r="3" fill="#ff4444"/>
+
+        <!-- R1-R6 resistors -->
+        <rect x="150" y="200" width="35" height="14" rx="2" fill="#c08020" stroke="#999" stroke-width="1"/>
+        <text x="167" y="211" text-anchor="middle" font-size="7" fill="#fff">10kΩ</text>
+        <text x="167" y="224" text-anchor="middle" font-size="7" fill="#aaa">R1</text>
+
+        <rect x="150" y="240" width="35" height="14" rx="2" fill="#c05020" stroke="#999" stroke-width="1"/>
+        <text x="167" y="251" text-anchor="middle" font-size="7" fill="#fff">470Ω</text>
+        <text x="167" y="264" text-anchor="middle" font-size="7" fill="#aaa">R2</text>
+
+        <rect x="150" y="280" width="35" height="14" rx="2" fill="#8020c0" stroke="#999" stroke-width="1"/>
+        <text x="167" y="291" text-anchor="middle" font-size="7" fill="#fff">1kΩ</text>
+        <text x="167" y="304" text-anchor="middle" font-size="7" fill="#aaa">R3</text>
+
+        <!-- C1-C2 capacitors -->
+        <rect x="160" y="340" width="20" height="24" rx="2" fill="#c0a020" stroke="#999" stroke-width="1"/>
+        <text x="170" y="357" text-anchor="middle" font-size="6.5" fill="#fff">100μF</text>
+        <text x="170" y="372" text-anchor="middle" font-size="7" fill="#aaa">C1</text>
+
+        <rect x="200" y="340" width="20" height="24" rx="2" fill="#c0a020" stroke="#999" stroke-width="1"/>
+        <text x="210" y="357" text-anchor="middle" font-size="6.5" fill="#fff">10μF</text>
+        <text x="210" y="372" text-anchor="middle" font-size="7" fill="#aaa">C2</text>
+
+        <!-- Connector J1 (power in) -->
+        <rect x="70" y="140" width="60" height="50" rx="2" fill="#333" stroke="#888" stroke-width="1.5"/>
+        <text x="100" y="162" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">J1</text>
+        <text x="100" y="174" text-anchor="middle" font-size="7" fill="#aaa">48V Input</text>
+        <text x="100" y="185" text-anchor="middle" font-size="7" fill="#aaa">3-pin screw</text>
+        <!-- J1 traces -->
+        <line x1="130" y1="160" x2="280" y2="210" stroke="#ff0000" stroke-width="1.5"/>
+        <line x1="130" y1="175" x2="280" y2="240" stroke="#000088" stroke-width="1.5"/>
+
+        <!-- LED D1-D4 (status) -->
+        <circle cx="500" cy="390" r="8" fill="#00ff00" stroke="#006600" stroke-width="1">
+          <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <text x="500" y="408" text-anchor="middle" font-size="7" fill="#aaa">D1-P1</text>
+        <circle cx="525" cy="390" r="8" fill="#00ff00" stroke="#006600" stroke-width="1">
+          <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+        </circle>
+        <text x="525" y="408" text-anchor="middle" font-size="7" fill="#aaa">D2-P2</text>
+        <circle cx="550" cy="390" r="8" fill="#ff9500" stroke="#996600" stroke-width="1"/>
+        <text x="550" y="408" text-anchor="middle" font-size="7" fill="#aaa">D3-P3</text>
+        <circle cx="575" cy="390" r="8" fill="#ff0000" stroke="#660000" stroke-width="1"/>
+        <text x="575" y="408" text-anchor="middle" font-size="7" fill="#aaa">D4-ERR</text>
+
+        <!-- Traces (copper) -->
+        <!-- Power trace (thick red) -->
+        <path d="M130,155 L280,155 L280,210" fill="none" stroke="#aa0000" stroke-width="2.5"/>
+        <!-- GND plane indicator -->
+        <text x="100" y="450" font-size="8" fill="#888">GND plane (F.Cu)</text>
+        <rect x="60" y="456" width="630" height="3" fill="#666" opacity="0.5"/>
+
+        <!-- Layer indicator -->
+        <rect x="660" y="80" width="80" height="120" rx="3" fill="#1a1a1a" stroke="#444" stroke-width="1"/>
+        <text x="700" y="97" text-anchor="middle" font-size="8" fill="#aaa" font-weight="bold">Layers</text>
+        <rect x="668" y="104" width="10" height="8" fill="#aa0000"/>
+        <text x="682" y="112" font-size="7" fill="#ccc">F.Cu</text>
+        <rect x="668" y="118" width="10" height="8" fill="#0000aa"/>
+        <text x="682" y="126" font-size="7" fill="#ccc">B.Cu</text>
+        <rect x="668" y="132" width="10" height="8" fill="#ffff00"/>
+        <text x="682" y="140" font-size="7" fill="#ccc">Edge.Cuts</text>
+        <rect x="668" y="146" width="10" height="8" fill="#444444"/>
+        <text x="682" y="154" font-size="7" fill="#ccc">B.Fab</text>
+        <rect x="668" y="160" width="10" height="8" fill="#00aaaa"/>
+        <text x="682" y="168" font-size="7" fill="#ccc">F.SilkS</text>
+        <rect x="668" y="174" width="10" height="8" fill="#555555"/>
+        <text x="682" y="182" font-size="7" fill="#ccc">B.Mask</text>
+
+        <!-- DRC report -->
+        <rect x="60" y="460" width="620" height="50" rx="3" fill="#0a1a0a" stroke="#2ed573" stroke-width="1"/>
+        <text x="75" y="477" font-size="8" fill="#2ed573" font-weight="bold">KiCad DRC Report:</text>
+        <text x="75" y="491" font-size="7.5" fill="#ccc">✓ 0 Errors | ✓ 0 Warnings | Board: 200×160mm | Layers: 2 | Tracks: 47 | Vias: 12</text>
+        <text x="75" y="503" font-size="7.5" fill="#aaa">Min trace: 0.25mm | Min clearance: 0.3mm | Impedance controlled: Yes | Gerber ready ✓</text>
+      </svg>
+    </div>
+    <div class="kc-inspector">
+      <h4>📋 Design Info</h4>
+      <div style="font-size:.7rem;color:#ccc;line-height:1.8;">
+        Board: 200×160mm<br>
+        Layers: 2 (F.Cu+B.Cu)<br>
+        Components: 48<br>
+        Tracks: 47<br>
+        Vias: 12<br>
+        Min trace: 0.25mm<br>
+        Min clearance: 0.3mm
+      </div>
+      <h4>🔩 Components</h4>
+      <div style="font-size:.7rem;color:#ccc;line-height:1.7;">
+        U1: MCU (ARIA EMS)<br>
+        K1: Island Relay<br>
+        R1-R6: Resistors<br>
+        C1-C4: Capacitors<br>
+        D1-D5: LEDs/Diodes<br>
+        J1-J4: Connectors<br>
+        F1: Fuse 15A<br>
+        MOV1: Surge prot.
+      </div>
+      <h4>✅ DRC Status</h4>
+      <div style="font-size:.72rem;color:#2ed573;">
+        Errors: 0<br>
+        Warnings: 0<br>
+        Netlist: OK<br>
+        Gerber: Ready
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 6: LTSPICE
+════════════════════════════════════════════════ -->
+<div class="tool-panel ltspice" id="t-ltspice">
+  <div class="lt-menu" style="background:#d4d0c8;border-bottom:2px solid #808080;">
+    <span style="font-weight:700;color:#000;">LTspice XVII</span>
+    <span>File</span><span>Edit</span><span>View</span><span>Simulate</span><span>Tools</span><span>Window</span><span>Help</span>
+    <span style="margin-left:auto;font-size:.7rem;color:#000;">GridSentinel_BESS_Boost_Converter.asc</span>
+  </div>
+  <div class="lt-toolbar">
+    <button class="lt-tbtn">⚡ Run</button>
+    <button class="lt-tbtn">⏹ Halt</button>
+    <button class="lt-tbtn">📊 Plot</button>
+    <button class="lt-tbtn">R Resistor</button>
+    <button class="lt-tbtn">C Cap</button>
+    <button class="lt-tbtn">L Inductor</button>
+    <button class="lt-tbtn">D Diode</button>
+    <button class="lt-tbtn">M MOSFET</button>
+    <button class="lt-tbtn">V Voltage</button>
+    <button class="lt-tbtn">W Wire</button>
+    <button class="lt-tbtn">G GND</button>
+    <span style="margin-left:auto;font-size:.7rem;color:#006600;" id="lt-status">● Simulation: 200ms complete</span>
+  </div>
+  <div class="lt-workspace">
+    <div class="lt-schematic">
+      <svg style="width:100%;height:100%;" viewBox="0 0 480 520">
+        <rect width="480" height="520" fill="#000010"/>
+        <text x="240" y="22" text-anchor="middle" font-size="10" fill="#00ff88" font-weight="bold">LTspice — BESS Bidirectional Boost Converter</text>
+
+        <!-- Components in LTspice style (white on dark) -->
+        <!-- V1 Battery (BESS) -->
+        <circle cx="70" cy="200" r="20" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+        <line x1="65" y1="195" x2="75" y2="195" stroke="#fff" stroke-width="1.5"/>
+        <line x1="70" y1="190" x2="70" y2="200" stroke="#fff" stroke-width="1.5"/>
+        <line x1="65" y1="208" x2="75" y2="208" stroke="#fff" stroke-width="1.5"/>
+        <text x="90" y="195" font-size="8" fill="#fff">V1</text>
+        <text x="90" y="207" font-size="7.5" fill="#aaffaa">9.6V (BESS)</text>
+        <text x="90" y="218" font-size="7" fill="#888">Rint=0.05Ω</text>
+
+        <!-- L1 Inductor -->
+        <path d="M140,150 Q148,140 155,150 Q162,140 169,150 Q176,140 183,150 Q190,140 197,150" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+        <text x="168" y="138" text-anchor="middle" font-size="7.5" fill="#fff">L1</text>
+        <text x="168" y="165" text-anchor="middle" font-size="7" fill="#aaffaa">2.2mH</text>
+        <line x1="70" y1="180" x2="70" y2="150" stroke="#fff" stroke-width="1.5"/>
+        <line x1="70" y1="150" x2="140" y2="150" stroke="#fff" stroke-width="1.5"/>
+        <line x1="197" y1="150" x2="240" y2="150" stroke="#fff" stroke-width="1.5"/>
+
+        <!-- Q1 MOSFET (switch) -->
+        <line x1="240" y1="120" x2="240" y2="180" stroke="#fff" stroke-width="1.5"/>
+        <line x1="230" y1="120" x2="250" y2="120" stroke="#fff" stroke-width="1.5"/>
+        <line x1="230" y1="180" x2="250" y2="180" stroke="#fff" stroke-width="1.5"/>
+        <line x1="260" y1="150" x2="240" y2="120" stroke="#fff" stroke-width="1"/>
+        <line x1="260" y1="150" x2="240" y2="180" stroke="#fff" stroke-width="1"/>
+        <line x1="260" y1="150" x2="290" y2="150" stroke="#fff" stroke-width="1.5"/>
+        <text x="270" y="142" font-size="7.5" fill="#fff">Q1</text>
+        <text x="270" y="165" font-size="7" fill="#ff9500">IRF540N</text>
+        <line x1="240" y1="120" x2="240" y2="80" stroke="#fff" stroke-width="1.5"/>
+        <line x1="240" y1="220" x2="240" y2="250" stroke="#fff" stroke-width="1.5"/><!-- Source to GND -->
+
+        <!-- D1 Freewheeling diode -->
+        <polygon points="310,140 330,130 330,150" fill="none" stroke="#ffffff" stroke-width="1.5"/>
+        <line x1="330" y1="130" x2="330" y2="150" stroke="#fff" stroke-width="1.5"/>
+        <line x1="310" y1="140" x2="300" y2="140" stroke="#fff" stroke-width="1.5"/>
+        <line x1="330" y1="140" x2="360" y2="140" stroke="#fff" stroke-width="1.5"/>
+        <text x="320" y="125" font-size="7.5" fill="#fff">D1 1N5822</text>
+
+        <!-- C1 output cap -->
+        <line x1="390" y1="110" x2="390" y2="170" stroke="#fff" stroke-width="1.5"/>
+        <line x1="378" y1="130" x2="402" y2="130" stroke="#fff" stroke-width="3"/>
+        <line x1="378" y1="148" x2="402" y2="148" stroke="#fff" stroke-width="3"/>
+        <text x="415" y="138" font-size="7.5" fill="#fff">C1</text>
+        <text x="415" y="150" font-size="7" fill="#aaffaa">470μF</text>
+        <!-- Connect -->
+        <line x1="360" y1="140" x2="390" y2="140" stroke="#fff" stroke-width="1.5"/>
+        <line x1="390" y1="110" x2="390" y2="80" stroke="#fff" stroke-width="1.5"/>
+        <line x1="80" y1="80" x2="450" y2="80" stroke="#fff" stroke-width="1.5"/>
+
+        <!-- R_load -->
+        <rect x="435" y="100" width="15" height="40" rx="2" fill="none" stroke="#fff" stroke-width="1.5"/>
+        <text x="455" y="118" font-size="7.5" fill="#fff">R_L</text>
+        <text x="455" y="130" font-size="7" fill="#aaffaa">0.365Ω</text>
+        <text x="455" y="142" font-size="7" fill="#888">(P1 load)</text>
+        <line x1="450" y1="100" x2="450" y2="80" stroke="#fff" stroke-width="1.5"/>
+        <line x1="450" y1="140" x2="450" y2="250" stroke="#fff" stroke-width="1.5"/>
+
+        <!-- GND symbols -->
+        <line x1="240" y1="250" x2="450" y2="250" stroke="#fff" stroke-width="1.5"/>
+        <line x1="70" y1="220" x2="70" y2="250" stroke="#fff" stroke-width="1.5"/>
+        <line x1="70" y1="250" x2="240" y2="250" stroke="#fff" stroke-width="1.5"/>
+        <line x1="240" y1="250" x2="240" y2="280" stroke="#fff" stroke-width="1.5"/>
+        <line x1="220" y1="280" x2="260" y2="280" stroke="#fff" stroke-width="1.5"/>
+        <line x1="225" y1="287" x2="255" y2="287" stroke="#fff" stroke-width="1.5"/>
+        <line x1="230" y1="294" x2="250" y2="294" stroke="#fff" stroke-width="1.5"/>
+        <text x="240" y="308" text-anchor="middle" font-size="8" fill="#aaa">GND</text>
+
+        <!-- PWM signal source -->
+        <rect x="60" y="320" width="80" height="40" rx="3" fill="none" stroke="#ff9500" stroke-width="1.5"/>
+        <text x="100" y="337" text-anchor="middle" font-size="7.5" fill="#ff9500">PULSE PWM</text>
+        <text x="100" y="348" font-size="7" fill="#888">f=10kHz D=0.6</text>
+        <text x="100" y="358" font-size="7" fill="#aaa">Vl=0 Vh=5V</text>
+        <line x1="140" y1="340" x2="290" y2="150" stroke="#ff9500" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="200" y="245" font-size="7" fill="#ff9500">Gate drive</text>
+
+        <!-- Voltage probe annotations -->
+        <circle cx="390" cy="80" r="5" fill="none" stroke="#00ff88" stroke-width="1.5"/>
+        <text x="405" y="77" font-size="7.5" fill="#00ff88">V(out)=48.2V</text>
+        <circle cx="168" cy="150" r="5" fill="none" stroke="#4fc3f7" stroke-width="1.5"/>
+        <text x="183" y="147" font-size="7.5" fill="#4fc3f7">IL=28A avg</text>
+
+        <!-- .tran directive -->
+        <text x="60" y="440" font-size="8" fill="#4fc3f7">.tran 0 200m 0 10u</text>
+        <text x="60" y="453" font-size="7.5" fill="#888">; Transient simulation: 200ms, step 10μs</text>
+
+        <!-- .param -->
+        <text x="60" y="468" font-size="7.5" fill="#4fc3f7">.param Vin=9.6 L=2.2m C=470u D=0.6</text>
+        <text x="60" y="481" font-size="7.5" fill="#4fc3f7">.model BESS D(Is=1n Rs=0.05)</text>
+
+        <!-- .measure -->
+        <text x="60" y="496" font-size="7.5" fill="#2ed573">.measure TRAN Vout AVG V(out) RESULT=48.23V</text>
+        <text x="60" y="508" font-size="7.5" fill="#2ed573">.measure TRAN Eta PARAM 100*Vout*IL/(Vin*Iin) RESULT=95.2%</text>
+      </svg>
+    </div>
+    <div class="lt-waveform" id="lt-wave">
+      <svg style="width:100%;height:100%;" viewBox="0 0 380 520">
+        <rect width="380" height="520" fill="#000010"/>
+        <text x="190" y="20" text-anchor="middle" font-size="9" fill="#4fc3f7" font-weight="bold">LTspice Waveform Viewer</text>
+
+        <!-- Waveform 1: V(out) -->
+        <rect x="10" y="30" width="360" height="110" rx="2" fill="#000" stroke="#333" stroke-width="1"/>
+        <text x="15" y="44" font-size="7.5" fill="#00ff88">V(out) — Output Voltage</text>
+        <text x="350" y="44" text-anchor="end" font-size="7.5" fill="#00ff88">48.23V avg</text>
+        <line x1="10" y1="80" x2="370" y2="80" stroke="#333" stroke-width="0.4"/>
+        <!-- Voltage ripple waveform -->
+        <polyline points="15,95 30,72 45,68 60,70 75,68 90,70 105,68 120,70 135,68 150,70 165,68 180,70 195,68 210,70 225,68 240,70 255,68 270,70 285,68 300,70 315,68 330,70 345,68 365,70" fill="none" stroke="#00ff88" stroke-width="1.2"/>
+        <text x="190" y="130" text-anchor="middle" font-size="7" fill="#555">Vripple = ±0.4V | Timebase: 20ms/div</text>
+
+        <!-- Waveform 2: I(L1) -->
+        <rect x="10" y="155" width="360" height="100" rx="2" fill="#000" stroke="#333" stroke-width="1"/>
+        <text x="15" y="169" font-size="7.5" fill="#4fc3f7">I(L1) — Inductor Current</text>
+        <text x="350" y="169" text-anchor="end" font-size="7.5" fill="#4fc3f7">28.4A avg</text>
+        <!-- Sawtooth inductor current -->
+        <polyline points="15,230 35,200 35,210 55,180 55,190 75,160 75,170 95,175 95,185 115,178 115,188 135,182 135,192 155,178 155,188 175,181 175,191 195,178 215,181 235,178 255,181 275,178 295,181 315,178 335,181 355,178" fill="none" stroke="#4fc3f7" stroke-width="1.2"/>
+        <text x="190" y="248" text-anchor="middle" font-size="7" fill="#555">ΔIL = 2.8A | D=0.6 | f=10kHz</text>
+
+        <!-- Waveform 3: V(gate) PWM -->
+        <rect x="10" y="268" width="360" height="80" rx="2" fill="#000" stroke="#333" stroke-width="1"/>
+        <text x="15" y="282" font-size="7.5" fill="#ff9500">V(gate) — PWM Signal</text>
+        <text x="350" y="282" text-anchor="end" font-size="7.5" fill="#ff9500">D=0.6 f=10kHz</text>
+        <!-- PWM square wave -->
+        <polyline points="15,340 15,292 31,292 31,340 37,340 37,292 53,292 53,340 59,340 59,292 75,292 75,340 81,340 81,292 97,292 97,340 103,340 103,292 119,292 119,340 125,340 125,292 141,292 141,340 147,340 147,292 163,292 163,340 169,340 169,292 185,292 185,340 191,340 191,292 207,292 207,340 213,340 213,292 229,292 229,340 235,340 235,292 251,292 251,340 257,340 257,292 273,292 273,340 279,340 279,292 295,292 295,340 301,340 301,292 317,292 317,340 323,340 323,292 339,292 339,340 345,340 345,292 361,292 365,340" fill="none" stroke="#ff9500" stroke-width="1.2"/>
+
+        <!-- Waveform 4: SOC -->
+        <rect x="10" y="362" width="360" height="80" rx="2" fill="#000" stroke="#333" stroke-width="1"/>
+        <text x="15" y="376" font-size="7.5" fill="#a855f7">SOC — Battery State of Charge</text>
+        <text x="350" y="376" text-anchor="end" font-size="7.5" fill="#a855f7">78% → 81% (charging)</text>
+        <!-- SOC increasing line -->
+        <line x1="15" y1="430" x2="365" y2="385" stroke="#a855f7" stroke-width="1.5"/>
+        <line x1="15" y1="390" x2="365" y2="390" stroke="#333" stroke-width=".4" stroke-dasharray="3,3"/>
+        <text x="190" y="438" text-anchor="middle" font-size="7" fill="#555">Charging rate: +0.8%/hr | Target: 90% max</text>
+
+        <!-- Measurements summary -->
+        <rect x="10" y="455" width="360" height="55" rx="3" fill="#001100" stroke="#2ed573" stroke-width="1"/>
+        <text x="190" y="470" text-anchor="middle" font-size="8" fill="#2ed573" font-weight="bold">LTspice SPICE Measurements</text>
+        <text x="15" y="484" font-size="7.5" fill="#aaffaa">Vout=48.23V | η=95.2% | ΔIL=2.8A | Vripple=0.4V | t_rise=12μs</text>
+        <text x="15" y="497" font-size="7.5" fill="#aaffaa">Gain_Margin=18.4dB ✓ | Phase_Margin=62° ✓ | Stable ✓ | D=0.60 ✓</text>
+        <text x="15" y="508" font-size="7.5" fill="#888">Run time: 3.2s | Timesteps: 20,000 | .tran 200ms</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 7: OrCAD/PSpice
+════════════════════════════════════════════════ -->
+<div class="tool-panel orcad" id="t-orcad">
+  <div class="oc-header">
+    <div class="logo">OrCAD PSpice A/D 17.4</div>
+    <span style="color:#ddb;font-size:.78rem;">GridSentinel_PowerElectronics.sch</span>
+  </div>
+  <div class="oc-menu">
+    <span>File</span><span>Edit</span><span>View</span><span>Place</span><span>PSpice</span><span>Analysis</span><span>Tools</span><span>Help</span>
+    <span style="margin-left:auto;font-size:.7rem;color:#4a0080;" id="oc-status">● Analysis Complete</span>
+  </div>
+  <div style="background:#d0d0d0;height:30px;display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:1px solid #bbb;">
+    <button style="padding:3px 10px;background:#c0c0c0;border:1px solid #999;font-size:.7rem;cursor:pointer;background:#4a0080;color:#fff;" onclick="runPspice()">▶ Run PSpice</button>
+    <button style="padding:3px 10px;background:#c0c0c0;border:1px solid #999;font-size:.7rem;cursor:pointer;">📊 Probe</button>
+    <button style="padding:3px 10px;background:#c0c0c0;border:1px solid #999;font-size:.7rem;cursor:pointer;">📋 Output</button>
+    <button style="padding:3px 10px;background:#c0c0c0;border:1px solid #999;font-size:.7rem;cursor:pointer;">⚙ Bias</button>
+  </div>
+  <div class="oc-workspace">
+    <div class="oc-schematic" id="oc-sch">
+      <svg style="width:100%;height:100%;" viewBox="0 0 480 510">
+        <rect width="480" height="510" fill="#fff"/>
+        <defs>
+          <pattern id="ocg" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#f0f0f0" stroke-width="0.3"/>
+          </pattern>
+        </defs>
+        <rect width="480" height="510" fill="url(#ocg)"/>
+
+        <text x="240" y="18" text-anchor="middle" font-size="9" fill="#4a0080" font-weight="bold">OrCAD Capture — GridSentinel Full HRES Schematic</text>
+
+        <!-- Title block -->
+        <rect x="0" y="472" width="480" height="38" fill="#f0f0f0" stroke="#ccc" stroke-width="1"/>
+        <text x="10" y="485" font-size="7.5" fill="#000">Title: GridSentinel PS-3 HRES</text>
+        <text x="10" y="497" font-size="7" fill="#666">Rev: 2.0 | Date: July 2026 | Sheet 1 of 3</text>
+        <text x="350" y="485" font-size="7.5" fill="#4a0080" font-weight="bold">OrCAD PSpice 17.4</text>
+        <text x="350" y="497" font-size="7" fill="#666">HYBRID HACK '26 | PS-3</text>
+
+        <!-- PV Source (VSOURCE) -->
+        <circle cx="60" cy="120" r="20" fill="#fff" stroke="#000" stroke-width="1.2"/>
+        <text x="60" y="116" text-anchor="middle" font-size="8">~</text>
+        <text x="60" y="128" text-anchor="middle" font-size="7">PV</text>
+        <text x="82" y="112" font-size="7.5" fill="#000">V_PV</text>
+        <text x="82" y="122" font-size="7" fill="#666">DC=48V</text>
+        <text x="82" y="132" font-size="7" fill="#666">Isc=8.5A</text>
+        <line x1="60" y1="100" x2="60" y2="70" stroke="#f00" stroke-width="1.2"/>
+        <line x1="60" y1="140" x2="60" y2="170" stroke="#00f" stroke-width="1.2"/>
+
+        <!-- Wind Source -->
+        <circle cx="60" cy="240" r="20" fill="#fff" stroke="#000" stroke-width="1.2"/>
+        <text x="60" y="236" text-anchor="middle" font-size="8">~</text>
+        <text x="60" y="248" text-anchor="middle" font-size="7">Wind</text>
+        <text x="82" y="232" font-size="7.5" fill="#000">V_Wind</text>
+        <text x="82" y="242" font-size="7" fill="#666">AC=400V</text>
+        <text x="82" y="252" font-size="7" fill="#666">f=50Hz</text>
+        <line x1="60" y1="220" x2="60" y2="190" stroke="#f00" stroke-width="1.2"/>
+        <line x1="60" y1="260" x2="60" y2="290" stroke="#00f" stroke-width="1.2"/>
+
+        <!-- Biomass -->
+        <rect x="38" y="335" width="44" height="28" rx="2" fill="#f1f8e9" stroke="#33691e" stroke-width="1.2"/>
+        <text x="60" y="349" text-anchor="middle" font-size="7.5" fill="#33691e">Biomass</text>
+        <text x="60" y="358" text-anchor="middle" font-size="7" fill="#666">60kW CHP</text>
+        <line x1="60" y1="335" x2="60" y2="310" stroke="#f00" stroke-width="1.2"/>
+        <line x1="60" y1="363" x2="60" y2="385" stroke="#00f" stroke-width="1.2"/>
+
+        <!-- DC Bus Line -->
+        <line x1="60" y1="70" x2="200" y2="70" stroke="#f00" stroke-width="2"/>
+        <line x1="60" y1="170" x2="60" y2="190" stroke="#00f" stroke-width="1.2"/>
+        <line x1="200" y1="70" x2="200" y2="120" stroke="#f00" stroke-width="2"/>
+        <!-- Bus label -->
+        <text x="280" y="65" font-size="9" fill="#4a0080" font-weight="bold">+VBus (DC 400V)</text>
+        <line x1="200" y1="70" x2="430" y2="70" stroke="#f00" stroke-width="2"/>
+
+        <!-- BESS -->
+        <rect x="155" y="240" width="90" height="65" rx="3" fill="#f3e5f5" stroke="#9c27b0" stroke-width="1.5"/>
+        <text x="200" y="262" text-anchor="middle" font-size="8.5" fill="#6a1b9a" font-weight="bold">BATT1</text>
+        <text x="200" y="274" text-anchor="middle" font-size="7.5" fill="#000">Vnom=48V</text>
+        <text x="200" y="285" text-anchor="middle" font-size="7" fill="#000">Cap=500kWh</text>
+        <text x="200" y="296" text-anchor="middle" font-size="7.5" fill="#9c27b0">SOC0=78%</text>
+        <line x1="200" y1="240" x2="200" y2="190" stroke="#f00" stroke-width="1.5"/>
+        <line x1="200" y1="190" x2="200" y2="70" stroke="#f00" stroke-width="1.5"/>
+
+        <!-- Inverter block -->
+        <rect x="270" y="100" width="80" height="60" rx="3" fill="#e8eaf6" stroke="#3f51b5" stroke-width="1.5"/>
+        <text x="310" y="122" text-anchor="middle" font-size="8.5" fill="#283593" font-weight="bold">INV1</text>
+        <text x="310" y="134" text-anchor="middle" font-size="7.5" fill="#000">DC/AC 200kW</text>
+        <text x="310" y="146" text-anchor="middle" font-size="7.5" fill="#5c6bc0">Grid-Forming</text>
+        <text x="310" y="158" text-anchor="middle" font-size="7" fill="#2ed573">η=97%</text>
+        <line x1="270" y1="130" x2="200" y2="70" stroke="#f00" stroke-width="1.5"/>
+        <line x1="350" y1="130" x2="390" y2="130" stroke="#4a0080" stroke-width="1.5"/>
+
+        <!-- Island relay block -->
+        <rect x="388" y="108" width="70" height="45" rx="2" fill="#ffebee" stroke="#c62828" stroke-width="1.5"/>
+        <text x="423" y="127" text-anchor="middle" font-size="8" fill="#c62828" font-weight="bold">S1_RELAY</text>
+        <text x="423" y="139" text-anchor="middle" font-size="7" fill="#000">IEC 62116</text>
+        <text x="423" y="150" text-anchor="middle" font-size="7.5" fill="#2ed573">T=1.8s ✓</text>
+        <line x1="458" y1="130" x2="475" y2="130" stroke="#4a0080" stroke-width="1.5"/>
+
+        <!-- Loads -->
+        <rect x="380" y="200" width="90" height="80" rx="3" fill="#fff0f0" stroke="#e91e63" stroke-width="1.5"/>
+        <text x="425" y="218" text-anchor="middle" font-size="8" fill="#880e4f" font-weight="bold">LOADS</text>
+        <text x="425" y="230" text-anchor="middle" font-size="7.5" fill="#c62828">P1: RL1=0.365Ω</text>
+        <text x="425" y="241" text-anchor="middle" font-size="7" fill="#000">85+42+18=145kW</text>
+        <text x="425" y="252" text-anchor="middle" font-size="7.5" fill="#ffa502">P2: RL2=1.2Ω</text>
+        <text x="425" y="263" text-anchor="middle" font-size="7.5" fill="#558b2f">P3: RL3=0.8Ω</text>
+        <text x="425" y="274" text-anchor="middle" font-size="7.5" fill="#2ed573">RL1: ALWAYS ON</text>
+        <line x1="425" y1="200" x2="425" y2="160" stroke="#f00" stroke-width="1.5"/>
+        <line x1="425" y1="160" x2="475" y2="130" stroke="#f00" stroke-width="1.5"/>
+
+        <!-- ARIA control block -->
+        <rect x="155" y="380" width="200" height="55" rx="5" fill="#001830" stroke="#00d4ff" stroke-width="1.5"/>
+        <text x="255" y="400" text-anchor="middle" font-size="9" fill="#00d4ff" font-weight="bold">ARIA EMS (PSpice E-element)</text>
+        <text x="255" y="413" text-anchor="middle" font-size="7.5" fill="#aad8f0">VCCS Dispatch Model: I=f(SOC,Pgen,Pload)</text>
+        <text x="255" y="425" text-anchor="middle" font-size="7.5" fill="#aad8f0">Kp=0.8 Ki=0.2 | RL opt: 13% autonomy gain</text>
+
+        <!-- GND symbols -->
+        <line x1="200" y1="400" x2="200" y2="430" stroke="#000" stroke-width="1.2"/>
+        <line x1="185" y1="430" x2="215" y2="430" stroke="#000" stroke-width="1.2"/>
+        <line x1="190" y1="435" x2="210" y2="435" stroke="#000" stroke-width="1.2"/>
+        <line x1="195" y1="440" x2="205" y2="440" stroke="#000" stroke-width="1.2"/>
+
+        <!-- .TRAN directive (PSpice) -->
+        <text x="10" y="455" font-size="7.5" fill="#4a0080">.TRAN 10us 259200s UIC</text>
+        <text x="10" y="465" font-size="7" fill="#666">; Full 72h transient simulation (259,200 seconds)</text>
+      </svg>
+    </div>
+    <div class="oc-probe" id="oc-probe">
+      <svg style="width:100%;height:100%;" viewBox="0 0 380 510">
+        <rect width="380" height="510" fill="#000010"/>
+        <text x="190" y="18" text-anchor="middle" font-size="9" fill="#4a0080" font-weight="bold">PSpice Probe — Waveform Analysis</text>
+
+        <!-- V(Bus) -->
+        <rect x="10" y="28" width="360" height="90" rx="2" fill="#000" stroke="#444" stroke-width="1"/>
+        <text x="15" y="42" font-size="7.5" fill="#ffff00">V(Bus) — DC Bus Voltage</text>
+        <text x="355" y="42" text-anchor="end" font-size="7.5" fill="#ffff00">230.4V</text>
+        <line x1="10" y1="75" x2="370" y2="75" stroke="#333" stroke-width="0.4"/>
+        <polyline points="15,95 40,60 65,58 90,60 115,58 140,60 165,58 190,60 215,58 240,60 265,58 290,60 315,58 340,60 365,58" fill="none" stroke="#ffff00" stroke-width="1.2"/>
+        <text x="190" y="112" text-anchor="middle" font-size="7" fill="#555">Vripple=±1.2V | Stable island mode</text>
+
+        <!-- I(BATT) -->
+        <rect x="10" y="130" width="360" height="85" rx="2" fill="#000" stroke="#444" stroke-width="1"/>
+        <text x="15" y="144" font-size="7.5" fill="#00ff00">I(BATT1) — Battery Current</text>
+        <text x="355" y="144" text-anchor="end" font-size="7.5" fill="#00ff00">+28A (charging)</text>
+        <line x1="10" y1="172" x2="370" y2="172" stroke="#333" stroke-width="0.4"/>
+        <line x1="10" y1="165" x2="370" y2="160" stroke="#00ff00" stroke-width="1.5"/>
+        <text x="190" y="210" text-anchor="middle" font-size="7" fill="#555">Positive=charging | Negative=discharging</text>
+
+        <!-- P(LOAD_P1) -->
+        <rect x="10" y="228" width="360" height="85" rx="2" fill="#000" stroke="#444" stroke-width="1"/>
+        <text x="15" y="242" font-size="7.5" fill="#ff0000">P(RL1) — P1 Critical Load Power</text>
+        <text x="355" y="242" text-anchor="end" font-size="7.5" fill="#ff0000">145kW</text>
+        <line x1="10" y1="270" x2="370" y2="270" stroke="#333" stroke-width="0.4"/>
+        <line x1="10" y1="260" x2="365" y2="260" stroke="#ff0000" stroke-width="1.8"/>
+        <text x="190" y="308" text-anchor="middle" font-size="7.5" fill="#ff4444">P1 NEVER SHED — 100% coverage ✓</text>
+
+        <!-- SOC(t) -->
+        <rect x="10" y="326" width="360" height="80" rx="2" fill="#000" stroke="#444" stroke-width="1"/>
+        <text x="15" y="340" font-size="7.5" fill="#cc88ff">SOC(t) — Battery State of Charge</text>
+        <text x="355" y="340" text-anchor="end" font-size="7.5" fill="#cc88ff">78%→23% (72h)</text>
+        <line x1="10" y1="398" x2="370" y2="398" stroke="#333" stroke-width="0.4"/>
+        <line x1="10" y1="348" x2="365" y2="390" stroke="#cc88ff" stroke-width="1.5"/>
+        <text x="190" y="404" text-anchor="middle" font-size="7" fill="#777">SOC bounds: 15%–90% | ARIA optimised</text>
+
+        <!-- Results box -->
+        <rect x="10" y="415" width="360" height="85" rx="3" fill="#0a0030" stroke="#4a0080" stroke-width="1.5"/>
+        <text x="190" y="430" text-anchor="middle" font-size="8" fill="#9c27b0" font-weight="bold">PSpice .MEASURE Results</text>
+        <text x="15" y="444" font-size="7.5" fill="#dda0dd">Vout_avg = 230.4V ✓ (target: 230V±5%)</text>
+        <text x="15" y="456" font-size="7.5" fill="#dda0dd">I_bess_avg = +28.4A ✓ (charging mode)</text>
+        <text x="15" y="468" font-size="7.5" fill="#dda0dd">P_P1_avg = 145.2kW ✓ (never shed)</text>
+        <text x="15" y="480" font-size="7.5" fill="#dda0dd">SOC_final = 23.1% ✓ (>15% limit)</text>
+        <text x="15" y="492" font-size="7.5" fill="#2ed573">→ All PS-3 criteria PASSED ✓</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 8: Autodesk EAGLE
+════════════════════════════════════════════════ -->
+<div class="tool-panel eagle" id="t-eagle">
+  <div class="ea-header">
+    <div class="ea-logo">Autodesk EAGLE 9.6.2</div>
+    <span style="color:#ffd;font-size:.78rem;">GridSentinel_PCB_IslandRelay.brd</span>
+    <span style="margin-left:auto;color:#2ed573;font-size:.7rem;" id="ea-status">● DRC: No errors</span>
+  </div>
+  <div class="ea-workspace">
+    <div class="ea-libs">
+      <div style="font-size:.68rem;color:#ff4b00;font-weight:700;margin:.3rem 0;">📚 Libraries</div>
+      <div style="font-size:.7rem;color:#ccc;line-height:2;">
+        ▶ adafruit<br>
+        ▶ arduino<br>
+        ▶ capacitor<br>
+        ▶ con-molex<br>
+        ▶ diode<br>
+        ▶ inductor<br>
+        ▶ mosfet<br>
+        ▶ relay<br>
+        ▶ resistor<br>
+        ▶ transistor<br>
+        ▶ voltage-reg<br>
+        ▶ led
+      </div>
+      <div style="font-size:.68rem;color:#ff4b00;font-weight:700;margin:.5rem 0 .2rem;">🛠 Tools</div>
+      <div style="font-size:.7rem;color:#ccc;line-height:1.9;">
+        Move (M)<br>
+        Route (X)<br>
+        Ratsnest (F)<br>
+        DRC (D)<br>
+        Autorouter<br>
+        Gerber Export
+      </div>
+    </div>
+    <div class="ea-canvas">
+      <svg style="width:100%;height:100%;" viewBox="0 0 640 560">
+        <rect width="640" height="560" fill="#1a1a1a"/>
+        <text x="320" y="20" text-anchor="middle" font-size="10" fill="#ff4b00" font-weight="bold">Autodesk EAGLE — PCB Editor: Island Relay Control Board</text>
+
+        <!-- PCB Board outline (yellow) -->
+        <rect x="40" y="40" width="550" height="460" rx="6" fill="#1c1c08" stroke="#cccc00" stroke-width="2"/>
+
+        <!-- Copper pour area -->
+        <rect x="45" y="45" width="540" height="450" rx="4" fill="rgba(0,80,0,0.15)"/>
+
+        <!-- Component U1 MCU large pad -->
+        <rect x="240" y="140" width="140" height="180" rx="4" fill="#006633" stroke="#00ff88" stroke-width="1.5"/>
+        <text x="310" y="165" text-anchor="middle" font-size="9" fill="#00ff88" font-weight="bold">ATmega328P</text>
+        <text x="310" y="178" text-anchor="middle" font-size="7.5" fill="#aaffaa">ARIA Controller</text>
+        <!-- Pads U1 left -->
+        <rect x="228" y="155" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="170" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="185" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="200" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="215" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="230" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="245" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="228" y="260" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <!-- Pads U1 right -->
+        <rect x="378" y="155" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="378" y="170" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="378" y="185" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="378" y="200" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+        <rect x="378" y="215" width="14" height="8" rx="1" fill="#c0a000" stroke="#999" stroke-width="0.5"/>
+
+        <!-- K1 Relay -->
+        <rect x="460" y="100" width="90" height="70" rx="3" fill="#300000" stroke="#ff4444" stroke-width="2"/>
+        <text x="505" y="124" text-anchor="middle" font-size="9" fill="#ff4444" font-weight="bold">K1</text>
+        <text x="505" y="137" text-anchor="middle" font-size="7.5" fill="#ffaaaa">Island Relay</text>
+        <text x="505" y="150" text-anchor="middle" font-size="7.5" fill="#2ed573">Rcoil=240Ω</text>
+        <!-- Relay pads -->
+        <rect x="455" y="115" width="8" height="10" rx="1" fill="#c0a000"/>
+        <rect x="455" y="135" width="8" height="10" rx="1" fill="#c0a000"/>
+        <rect x="549" y="115" width="8" height="10" rx="1" fill="#c0a000"/>
+        <rect x="549" y="135" width="8" height="10" rx="1" fill="#c0a000"/>
+        <rect x="549" y="155" width="8" height="10" rx="1" fill="#c0a000"/>
+
+        <!-- Resistors SMD 0805 -->
+        <rect x="80" y="160" width="28" height="12" rx="2" fill="#c08020" stroke="#888" stroke-width="0.8"/>
+        <text x="94" y="170" text-anchor="middle" font-size="6.5" fill="#fff">R1 10k</text>
+        <rect x="80" y="190" width="28" height="12" rx="2" fill="#c05020" stroke="#888" stroke-width="0.8"/>
+        <text x="94" y="200" text-anchor="middle" font-size="6.5" fill="#fff">R2 470</text>
+        <rect x="80" y="220" width="28" height="12" rx="2" fill="#806020" stroke="#888" stroke-width="0.8"/>
+        <text x="94" y="230" text-anchor="middle" font-size="6.5" fill="#fff">R3 1k</text>
+        <rect x="80" y="250" width="28" height="12" rx="2" fill="#204080" stroke="#888" stroke-width="0.8"/>
+        <text x="94" y="260" text-anchor="middle" font-size="6.5" fill="#fff">R4 4k7</text>
+        <rect x="80" y="280" width="28" height="12" rx="2" fill="#806020" stroke="#888" stroke-width="0.8"/>
+        <text x="94" y="290" text-anchor="middle" font-size="6.5" fill="#fff">R5 100</text>
+
+        <!-- Capacitors -->
+        <rect x="140" y="380" width="20" height="28" rx="2" fill="#c0a020" stroke="#999" stroke-width="0.8"/>
+        <text x="150" y="397" text-anchor="middle" font-size="6" fill="#fff">C1</text>
+        <text x="150" y="416" text-anchor="middle" font-size="6" fill="#aaa">100μF</text>
+        <rect x="175" y="380" width="20" height="28" rx="2" fill="#c0a020" stroke="#999" stroke-width="0.8"/>
+        <text x="185" y="397" text-anchor="middle" font-size="6" fill="#fff">C2</text>
+        <text x="185" y="416" text-anchor="middle" font-size="6" fill="#aaa">10μF</text>
+        <rect x="210" y="380" width="14" height="14" rx="2" fill="#c0a020" stroke="#999" stroke-width="0.8"/>
+        <text x="217" y="391" text-anchor="middle" font-size="5.5" fill="#fff">C3</text>
+        <text x="217" y="403" text-anchor="middle" font-size="5.5" fill="#aaa">100n</text>
+
+        <!-- Power connector J1 -->
+        <rect x="55" y="80" width="70" height="40" rx="2" fill="#333" stroke="#888" stroke-width="1.5"/>
+        <text x="90" y="97" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">J1</text>
+        <text x="90" y="109" text-anchor="middle" font-size="7" fill="#aaa">+48V 10A</text>
+        <!-- J1 pins -->
+        <rect x="62" y="88" width="8" height="14" rx="1" fill="#c0a000"/>
+        <rect x="76" y="88" width="8" height="14" rx="1" fill="#c0a000"/>
+        <rect x="90" y="88" width="8" height="14" rx="1" fill="#c0a000"/>
+
+        <!-- Traces (EAGLE style) -->
+        <!-- Power trace (thick, top copper layer) -->
+        <line x1="90" y1="120" x2="90" y2="159" stroke="#aa0000" stroke-width="2.5"/>
+        <line x1="90" y1="159" x2="228" y2="159" stroke="#aa0000" stroke-width="2.5"/>
+        <!-- Signal traces -->
+        <line x1="242" y1="230" x2="140" y2="230" stroke="#00aa00" stroke-width="1.2"/>
+        <line x1="140" y1="230" x2="108" y2="230" stroke="#00aa00" stroke-width="1.2"/>
+        <line x1="392" y1="200" x2="455" y2="130" stroke="#aa0000" stroke-width="1.5"/>
+        <line x1="392" y1="185" x2="440" y2="185" stroke="#00aaaa" stroke-width="1.2"/>
+
+        <!-- LED indicators on PCB -->
+        <circle cx="460" cy="380" r="7" fill="#00ff00" stroke="#006600" stroke-width="1">
+          <animate attributeName="fill" values="#00ff00;#003300;#00ff00" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <text x="460" y="396" text-anchor="middle" font-size="6.5" fill="#aaa">D1</text>
+        <circle cx="485" cy="380" r="7" fill="#00ff00" stroke="#006600" stroke-width="1">
+          <animate attributeName="fill" values="#00ff00;#003300;#00ff00" dur="1.5s" begin="0.4s" repeatCount="indefinite"/>
+        </circle>
+        <text x="485" y="396" text-anchor="middle" font-size="6.5" fill="#aaa">D2</text>
+        <circle cx="510" cy="380" r="7" fill="#ff9500" stroke="#996600" stroke-width="1"/>
+        <text x="510" y="396" text-anchor="middle" font-size="6.5" fill="#aaa">D3</text>
+        <circle cx="535" cy="380" r="7" fill="#333" stroke="#666" stroke-width="1"/>
+        <text x="535" y="396" text-anchor="middle" font-size="6.5" fill="#aaa">D4</text>
+
+        <!-- Ratsnest remaining -->
+        <text x="300" y="440" text-anchor="middle" font-size="8.5" fill="#aaaaff">Ratsnest: 0 airwires — Fully routed ✓</text>
+
+        <!-- DRC result -->
+        <rect x="40" y="455" width="550" height="42" rx="3" fill="#001a00" stroke="#2ed573" stroke-width="1"/>
+        <text x="55" y="470" font-size="8" fill="#2ed573" font-weight="bold">EAGLE DRC Results:</text>
+        <text x="55" y="483" font-size="7.5" fill="#ccc">✓ 0 Errors | ✓ 0 Clearance violations | ✓ Fully routed | Min trace: 0.25mm | Min space: 0.3mm</text>
+        <text x="55" y="494" font-size="7.5" fill="#888">Gerber files: F.Cu, B.Cu, F.SilkS, F.Mask, Edge.Cuts — Ready for manufacture ✓</text>
+      </svg>
+    </div>
+    <div class="ea-props">
+      <div style="font-size:.68rem;color:#ff4b00;font-weight:700;margin-bottom:4px;">📋 Board Properties</div>
+      <div style="font-size:.7rem;color:#ccc;line-height:1.9;">
+        Size: 200×160mm<br>
+        Layers: 2<br>
+        Components: 48<br>
+        Pads: 186<br>
+        Vias: 14<br>
+        Tracks: 52<br>
+        Cu area: 68%<br>
+      </div>
+      <div style="font-size:.68rem;color:#ff4b00;font-weight:700;margin:.5rem 0 .2rem;">🔍 DRC Status</div>
+      <div style="font-size:.72rem;color:#2ed573;line-height:1.8;">
+        Errors: 0 ✓<br>
+        Shorts: 0 ✓<br>
+        Clearance: OK ✓<br>
+        Unrouted: 0 ✓
+      </div>
+      <div style="font-size:.68rem;color:#ff4b00;font-weight:700;margin:.5rem 0 .2rem;">📦 BOM</div>
+      <div style="font-size:.68rem;color:#ccc;line-height:1.8;">
+        R: 5× (10kΩ–100Ω)<br>
+        C: 4× (100μF–100n)<br>
+        U: 1× MCU<br>
+        K: 1× Relay SPDT<br>
+        D: 4× LED<br>
+        J: 4× Connector<br>
+        F: 1× Fuse 15A
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     TOOL 9: RETSCREEN
+════════════════════════════════════════════════ -->
+<div class="tool-panel retscreen" id="t-retscreen">
+  <div class="rs-header">
+    <div class="rs-logo">RETScreen Expert 9.0</div>
+    <span style="color:#adffa0;font-size:.78rem;">GridSentinel_FinancialAnalysis.retscreen</span>
+    <span style="margin-left:auto;color:#adffa0;font-size:.7rem;">Government of Canada — Natural Resources Canada</span>
+  </div>
+  <div style="background:#004d24;padding:3px 10px;font-size:.7rem;color:#adffa0;display:flex;gap:20px;">
+    <span>File</span><span>Edit</span><span>View</span><span>Analysis</span><span>Reports</span><span>Help</span>
+    <span style="margin-left:auto;" id="rs-status">● Analysis Complete</span>
+  </div>
+  <div class="rs-tabs">
+    <div class="rs-nav">
+      <h4>Navigation</h4>
+      <ul style="padding:0;">
+        <li class="active">📋 Project Info</li>
+        <li onclick="switchRS(this,'rs-energy')">⚡ Energy Model</li>
+        <li onclick="switchRS(this,'rs-ghg')">🌱 GHG Analysis</li>
+        <li onclick="switchRS(this,'rs-financial')">💰 Financial</li>
+        <li onclick="switchRS(this,'rs-sensitivity')">📊 Sensitivity</li>
+        <li onclick="switchRS(this,'rs-summary')">✅ Summary</li>
+      </ul>
+    </div>
+    <div class="rs-content" id="rs-content">
+      <!-- Project Info (default) -->
+      <div id="rs-project" class="rs-section">
+        <h3>📋 Project Information</h3>
+        <table class="rs-table">
+          <tr><th colspan="2">GridSentinel AI — Hybrid Renewable Microgrid</th></tr>
+          <tr><td>Project Name</td><td class="num">GridSentinel PS-3 Island Mode</td></tr>
+          <tr><td>Technology</td><td class="num">Solar PV + Wind + Biomass CHP + BESS</td></tr>
+          <tr><td>Location</td><td class="num">Tamil Nadu Coast, India (10.5°N, 79.8°E)</td></tr>
+          <tr><td>Analysis Type</td><td class="num">Off-Grid / Island Mode HRES</td></tr>
+          <tr><td>Analyst</td><td class="num">GridSentinel Team — Hybrid Hack '26</td></tr>
+          <tr><td>Analysis Period</td><td class="num">20 Years</td></tr>
+          <tr><td>Currency</td><td class="num">INR (Indian Rupee)</td></tr>
+          <tr><td>Discount Rate</td><td class="num">8%</td></tr>
+        </table>
+      </div>
+
+      <div id="rs-energy" class="rs-section" style="display:none;">
+        <h3>⚡ Energy Production Model</h3>
+        <table class="rs-table">
+          <tr><th>Energy Source</th><th>Installed</th><th>Annual Generation</th><th>CF</th><th>Efficiency</th></tr>
+          <tr><td>Solar PV (#1)</td><td>150 kWp</td><td class="num">499,644 kWh</td><td class="num">38.0%</td><td class="num">91%</td></tr>
+          <tr><td>Wind (#2)</td><td>100 kW</td><td class="num">376,680 kWh</td><td class="num">43.0%</td><td class="num">87%</td></tr>
+          <tr><td>Biomass CHP (#7)</td><td>60 kW</td><td class="num">525,600 kWh</td><td class="num">100%</td><td class="num">82%</td></tr>
+          <tr><td><b>Total Generation</b></td><td><b>310 kW</b></td><td class="num"><b>1,401,924 kWh</b></td><td class="num">—</td><td class="num"><b>87%</b></td></tr>
+          <tr><td>BESS (#5) Losses</td><td>500 kWh</td><td class="num">(69,000 kWh)</td><td class="num">—</td><td class="num">95%</td></tr>
+          <tr><td><b>Net Energy Delivered</b></td><td>—</td><td class="num"><b>1,332,924 kWh</b></td><td class="num">—</td><td class="num"><b>83.2%</b></td></tr>
+        </table>
+        <table class="rs-table" style="margin-top:.6rem;">
+          <tr><th colspan="2">Solar Resource — Tamil Nadu</th></tr>
+          <tr><td>Annual Solar Irradiation</td><td class="num">2,007.5 kWh/m²/yr</td></tr>
+          <tr><td>Daily Solar Irradiation</td><td class="num">5.5 kWh/m²/day</td></tr>
+          <tr><td>Peak Sun Hours</td><td class="num">5.5 h/day</td></tr>
+          <tr><td>Wind Speed (annual avg)</td><td class="num">7.8 m/s @ 80m hub</td></tr>
+        </table>
+      </div>
+
+      <div id="rs-ghg" class="rs-section" style="display:none;">
+        <h3>🌱 GHG Emission Analysis</h3>
+        <table class="rs-table">
+          <tr><th>Parameter</th><th>Base Case (Diesel)</th><th>GridSentinel</th><th>Reduction</th></tr>
+          <tr><td>Annual Energy</td><td>1,332,924 kWh</td><td class="num">1,332,924 kWh</td><td>—</td></tr>
+          <tr><td>Emission Factor</td><td>0.82 kg CO₂/kWh</td><td class="num">0.06 kg CO₂/kWh</td><td class="num" style="color:green;">−0.76</td></tr>
+          <tr><td>Annual GHG Emissions</td><td>1,093,000 kg</td><td class="num">79,976 kg</td><td class="num" style="color:green;">−92.7%</td></tr>
+          <tr><td><b>Annual CO₂ Savings</b></td><td></td><td class="num"><b>1,013,024 kg</b></td><td class="num" style="color:green;"><b>1,013 tonnes</b></td></tr>
+          <tr><td>20-Year CO₂ Savings</td><td></td><td class="num">20,261 tonnes</td><td class="num" style="color:green;">Significant</td></tr>
+          <tr><td>GHG Credit Value</td><td></td><td class="num">Rs 800/tonne</td><td class="num" style="color:green;">Rs 8.10 Cr (20yr)</td></tr>
+        </table>
+        <div style="margin-top:.6rem;padding:.6rem;background:#e8f5e9;border-left:4px solid #006633;border-radius:3px;">
+          <b style="color:#006633;">📊 RETScreen GHG Finding:</b> GridSentinel reduces CO₂ emissions by <b>92.7%</b> compared to diesel backup. 
+          Over 20 years, this represents <b>20,261 tonnes CO₂ avoided</b> — equivalent to removing 4,400 cars from the road annually.
+        </div>
+      </div>
+
+      <div id="rs-financial" class="rs-section" style="display:none;">
+        <h3>💰 Financial Analysis</h3>
+        <table class="rs-table">
+          <tr><th colspan="3">Capital Cost Breakdown</th></tr>
+          <tr><th>Component</th><th>Cost (Rs Lakhs)</th><th>% Total</th></tr>
+          <tr><td>Solar PV 150kWp (#1)</td><td class="num">84.0</td><td class="num">30%</td></tr>
+          <tr><td>Wind Turbines 3×33kW (#2)</td><td class="num">63.0</td><td class="num">22.5%</td></tr>
+          <tr><td>Biomass CHP 60kW (#7)</td><td class="num">42.0</td><td class="num">15%</td></tr>
+          <tr><td>BESS 500kWh (#5)</td><td class="num">56.0</td><td class="num">20%</td></tr>
+          <tr><td>Microgrid Controls (#9)</td><td class="num">21.0</td><td class="num">7.5%</td></tr>
+          <tr><td>Installation & Civil</td><td class="num">14.0</td><td class="num">5%</td></tr>
+          <tr><td><b>Total CAPEX</b></td><td class="num"><b>280.0</b></td><td class="num"><b>100%</b></td></tr>
+        </table>
+        <table class="rs-table" style="margin-top:.6rem;">
+          <tr><th colspan="2">Key Financial Metrics</th></tr>
+          <tr><td>Annual Energy Savings (vs diesel)</td><td class="num" style="color:green;">Rs 160.0 Lakhs/yr</td></tr>
+          <tr><td>Annual O&M Cost</td><td class="num">Rs 18.0 Lakhs/yr</td></tr>
+          <tr><td>Net Annual Benefit</td><td class="num" style="color:green;">Rs 142.0 Lakhs/yr</td></tr>
+          <tr><td>Simple Payback Period</td><td class="num"><b style="color:green;">1.97 years</b></td></tr>
+          <tr><td>LCOE (GridSentinel)</td><td class="num"><b style="color:green;">Rs 4.2/kWh</b></td></tr>
+          <tr><td>LCOE (Diesel Backup)</td><td class="num" style="color:red;">Rs 22.0/kWh</td></tr>
+          <tr><td>LCOE Savings</td><td class="num" style="color:green;">Rs 17.8/kWh (81%)</td></tr>
+          <tr><td>Net Present Value (NPV) 20yr</td><td class="num"><b style="color:green;">Rs 18.6 Cr</b></td></tr>
+          <tr><td>Internal Rate of Return (IRR)</td><td class="num" style="color:green;">52.3%</td></tr>
+          <tr><td>Benefit-Cost Ratio</td><td class="num" style="color:green;">7.6</td></tr>
+        </table>
+      </div>
+
+      <div id="rs-sensitivity" class="rs-section" style="display:none;">
+        <h3>📊 Sensitivity Analysis</h3>
+        <table class="rs-table">
+          <tr><th>Variable</th><th>−20%</th><th>Base Case</th><th>+20%</th></tr>
+          <tr><td>CAPEX</td><td class="num">Rs 20.2Cr NPV</td><td class="num">Rs 18.6Cr</td><td class="num">Rs 17.0Cr</td></tr>
+          <tr><td>Diesel Price</td><td class="num">Rs 16.2Cr NPV</td><td class="num">Rs 18.6Cr</td><td class="num">Rs 21.0Cr</td></tr>
+          <tr><td>Solar Irradiance</td><td class="num">Rs 17.4Cr NPV</td><td class="num">Rs 18.6Cr</td><td class="num">Rs 19.8Cr</td></tr>
+          <tr><td>O&M Cost</td><td class="num">Rs 19.5Cr NPV</td><td class="num">Rs 18.6Cr</td><td class="num">Rs 17.7Cr</td></tr>
+          <tr><td>Discount Rate</td><td class="num">Rs 22.3Cr NPV</td><td class="num">Rs 18.6Cr</td><td class="num">Rs 15.8Cr</td></tr>
+        </table>
+        <div style="margin-top:.6rem;padding:.6rem;background:#e3f2fd;border-left:4px solid #0277bd;border-radius:3px;">
+          <b style="color:#0277bd;">Sensitivity Conclusion:</b> NPV remains strongly positive under all ±20% parameter variations. 
+          Project viability is <b>robust</b> — even with 20% CAPEX overrun AND 20% lower solar resource simultaneously, NPV = Rs 14.8Cr (positive).
+        </div>
+      </div>
+
+      <div id="rs-summary" class="rs-section" style="display:none;">
+        <h3>✅ RETScreen Summary Report</h3>
+        <table class="rs-table">
+          <tr><th colspan="3">GridSentinel AI — Final RETScreen Summary</th></tr>
+          <tr><td>Technology</td><td>Solar+Wind+Biomass+BESS Hybrid</td><td class="num" style="color:green;">✓ Validated</td></tr>
+          <tr><td>Annual Generation</td><td>1,332,924 kWh net</td><td class="num" style="color:green;">✓ Viable</td></tr>
+          <tr><td>LCOE</td><td>Rs 4.2/kWh</td><td class="num" style="color:green;">✓ Competitive</td></tr>
+          <tr><td>Simple Payback</td><td>1.97 years</td><td class="num" style="color:green;">✓ Excellent</td></tr>
+          <tr><td>NPV (20yr)</td><td>Rs 18.6 Cr</td><td class="num" style="color:green;">✓ Strongly positive</td></tr>
+          <tr><td>IRR</td><td>52.3%</td><td class="num" style="color:green;">✓ Excellent</td></tr>
+          <tr><td>CO₂ Savings (20yr)</td><td>20,261 tonnes</td><td class="num" style="color:green;">✓ Significant</td></tr>
+          <tr><td>GHG Reduction</td><td>92.7%</td><td class="num" style="color:green;">✓ Near-zero emission</td></tr>
+          <tr><td>Benefit-Cost Ratio</td><td>7.6</td><td class="num" style="color:green;">✓ High value</td></tr>
+          <tr><td><b>OVERALL VIABILITY</b></td><td><b>Economically and Environmentally Viable</b></td><td class="num" style="color:green;font-size:.9rem;"><b>✅ APPROVED</b></td></tr>
+        </table>
+        <div style="margin-top:.8rem;padding:.8rem;background:#e8f5e9;border:2px solid #006633;border-radius:5px;">
+          <b style="color:#006633;font-size:.9rem;">🏆 RETScreen Certification:</b><br>
+          <span style="color:#333;font-size:.82rem;">GridSentinel AI hybrid microgrid system demonstrates <b>excellent financial viability</b> with NPV of Rs 18.6 Cr over 20 years, 
+          IRR of 52.3%, and payback period of under 2 years. The system achieves <b>92.7% GHG reduction</b> vs diesel backup while delivering 
+          uninterrupted power to critical infrastructure under PS-3 disaster conditions. <b>RETScreen validates this project as economically 
+          sound and environmentally superior.</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<div class="status-bar">
+  <span class="sb-run" id="sb-tool">● HOMER Pro Active</span>
+  <span>GridSentinel AI — Multi-Tool Simulation Suite</span>
+  <span class="sb-ok">PS-3: Power Grid Failure | Island Mode 72h</span>
+  <span>Sources: #1 Solar + #2 Wind + #5 BESS + #7 Biomass + #9 Microgrid</span>
+  <span id="sb-clk" style="margin-left:auto;"></span>
+</div>
+
+<script>
+// ── Clock ────────────────────────────────────────────────
+function tick(){
+  const t=new Date().toLocaleTimeString('en-IN',{hour12:false});
+  document.getElementById('clk').textContent=t;
+  document.getElementById('sb-clk').textContent=t;
+}
+setInterval(tick,1000);tick();
+
+// ── Tool Switcher ────────────────────────────────────────
+const toolNames={
+  homer:'● HOMER Pro Active',matlab:'● MATLAB/Simulink Active',tinkercad:'● Tinkercad Active',
+  multisim:'● NI Multisim Active',kicad:'● KiCad Active',ltspice:'● LTspice Active',
+  orcad:'● OrCAD/PSpice Active',eagle:'● Autodesk EAGLE Active',retscreen:'● RETScreen Active'
+};
+function showTool(id){
+  document.querySelectorAll('.tool-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('t-'+id).classList.add('active');
+  document.querySelectorAll('.ttab').forEach((t,i)=>{
+    t.classList.toggle('active',['homer','matlab','tinkercad','multisim','kicad','ltspice','orcad','eagle','retscreen'][i]===id);
+  });
+  document.getElementById('sb-tool').textContent=toolNames[id]||'● Active';
+  if(id==='homer') initHomerChart();
+  if(id==='matlab') initScopeChart();
+  if(id==='ltspice') initLTWaveforms();
+}
+
+// ── HOMER Chart ──────────────────────────────────────────
+function initHomerChart(){
+  const canvas=document.getElementById('homer-chart');
+  if(!canvas) return;
+  const W=canvas.parentElement.clientWidth-16||220, H=120;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');ctx.scale(2,2);ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#2a2a2a';ctx.fillRect(0,0,W,H);
+  ctx.font='7px monospace';ctx.fillStyle='#ff9500';ctx.fillText('HOMER: Energy Dispatch (72h)',4,10);
+  const hrs=Array.from({length:73},(_,i)=>i);
+  const pad={t:16,b:20,l:28,r:6};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  ctx.strokeStyle='#444';ctx.lineWidth=.3;
+  for(let i=0;i<=3;i++){const y=pad.t+cH*(1-i/3);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cW,y);ctx.stroke();ctx.fillStyle='#666';ctx.fillText(Math.round(i*100),2,y+2);}
+  const draws=[[genS(75),'#f5a623'],[genW(8),'#4fc3f7'],[genB(100),'#69d16f'],[hrs.map(()=>145),'#ff4757']];
+  const maxV=280;
+  draws.forEach(([data,c])=>{
+    ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=1.2;ctx.shadowColor=c;ctx.shadowBlur=2;
+    data.forEach((v,i)=>{const x=pad.l+(i/72)*cW,y=pad.t+cH*(1-v/maxV);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+    ctx.stroke();ctx.shadowBlur=0;
+  });
+  [0,24,48,72].forEach(h=>{ctx.fillStyle='#666';ctx.fillText('H'+h,pad.l+(h/72)*cW-4,H-4);});
+}
+function genS(p){return Array.from({length:73},(_,h)=>{const t=h%24;return(t>=6&&t<=20)?Math.max(0,150*(p/100)*Math.sin(Math.PI*(t-6)/14)):0;});}
+function genW(m){const p=Math.min(m/12,1);return Array.from({length:73},()=>100*p+(Math.random()-.5)*10);}
+function genB(p){return Array.from({length:73},()=>60*p/100);}
+
+// ── MATLAB Scope ─────────────────────────────────────────
+function initScopeChart(){
+  const canvas=document.getElementById('scope-canvas');
+  if(!canvas) return;
+  canvas.width=640;canvas.height=180;canvas.style.width='320px';canvas.style.height='90px';
+  const ctx=canvas.getContext('2d');ctx.scale(2,2);ctx.clearRect(0,0,320,90);
+  ctx.fillStyle='#000';ctx.fillRect(0,0,320,90);
+  // Grid lines
+  ctx.strokeStyle='#114411';ctx.lineWidth=.5;
+  for(let i=0;i<=4;i++){const y=i*22.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(320,y);ctx.stroke();}
+  for(let i=0;i<=8;i++){const x=i*40;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,90);ctx.stroke();}
+  // Channel A: Voltage (green, sine wave)
+  ctx.beginPath();ctx.strokeStyle='#2ed573';ctx.lineWidth=1.2;ctx.shadowColor='#2ed573';ctx.shadowBlur=3;
+  for(let x=0;x<320;x++){const v=30+Math.sin(x*Math.PI/25)*28;x===0?ctx.moveTo(x,v):ctx.lineTo(x,v);}
+  ctx.stroke();ctx.shadowBlur=0;
+  // Channel B: SOC (orange)
+  ctx.beginPath();ctx.strokeStyle='#ff9500';ctx.lineWidth=1.2;
+  for(let x=0;x<320;x++){const v=60-x*0.08;ctx.lineTo(x,Math.max(20,v));}
+  ctx.stroke();
+  // Channel C: Current (cyan)
+  ctx.beginPath();ctx.strokeStyle='#4fc3f7';ctx.lineWidth=1;
+  for(let x=0;x<320;x++){const v=72+Math.cos(x*Math.PI/25)*15+(Math.random()-.5)*3;ctx.lineTo(x,Math.min(85,v));}
+  ctx.stroke();
+}
+
+// ── LTspice Waveforms ────────────────────────────────────
+function initLTWaveforms(){} // Already static SVG
+
+// ── Tinkercad Serial ─────────────────────────────────────
+const lines=['SOC=79 CHG=+28A','SOLAR=142kW OK','WIND=87kW OK','BIO=60kW FIRM','RELAY=ISLAND','DISPATCH_OK','P1=ON P2=ON P3=--','LCOE=4.2 Rs/kWh'];
+let li=0;
+setInterval(()=>{
+  const el=document.getElementById('tc-serial-live');
+  if(el){el.innerHTML+=lines[li%lines.length]+'<br>';li++;el.scrollTop=el.scrollHeight;}
+},2500);
+
+// ── Run functions ─────────────────────────────────────────
+function runHomer(){
+  document.getElementById('homer-status').textContent='⏳ Calculating...';
+  document.getElementById('homer-status').style.color='#ffa502';
+  setTimeout(()=>{document.getElementById('homer-status').textContent='✓ Optimal Solution Found';document.getElementById('homer-status').style.color='#2ed573';initHomerChart();},2500);
+}
+function runMatlab(){
+  document.getElementById('mat-status').textContent='⏳ Running simulation...';
+  setTimeout(()=>{document.getElementById('mat-status').textContent='● Simulation Complete';document.getElementById('mat-status').style.color='#2ed573';},2000);
+}
+function runTinkercad(){
+  document.getElementById('tc-status').textContent='⏳ Starting...';
+  setTimeout(()=>{document.getElementById('tc-status').textContent='▶ Simulation Running';document.getElementById('tc-status').style.color='#ff6b00';},500);
+}
+function runMultisim(){
+  document.getElementById('ms-status').textContent='⏳ Running...';
+  setTimeout(()=>{document.getElementById('ms-status').textContent='● Complete';},1500);
+}
+function runPspice(){
+  document.getElementById('oc-status').textContent='⏳ Running PSpice...';
+  setTimeout(()=>{document.getElementById('oc-status').textContent='● Analysis Complete';},2000);
+}
+
+// ── RETScreen navigation ─────────────────────────────────
+const rsSections=['rs-project','rs-energy','rs-ghg','rs-financial','rs-sensitivity','rs-summary'];
+function switchRS(el, id){
+  document.querySelectorAll('.rs-nav li').forEach(l=>l.classList.remove('active'));
+  el.classList.add('active');
+  rsSections.forEach(s=>{const el2=document.getElementById(s);if(el2)el2.style.display='none';});
+  const target=document.getElementById(id);if(target)target.style.display='block';
+}
+
+// ── Init ──────────────────────────────────────────────────
+setTimeout(initHomerChart,400);
+</script>
+</body>
+</html>
